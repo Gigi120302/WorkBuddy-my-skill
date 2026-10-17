@@ -1,0 +1,3034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>求职投递管理工作台</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f0f2f5;--c-surface:#fff;--c-border:#e5e7eb;--c-text:#1e293b;
+  --c-text-sec:#64748b;--c-text-mut:#94a3b8;--c-primary:#4f6df5;
+  --c-primary-bg:#eef1fe;--c-danger:#ef4444;--c-danger-bg:#fef2f2;
+  --c-success:#10b981;--c-warning:#f59e0b;--c-purple:#8b5cf6;
+  --radius:8px;--radius-sm:6px;--shadow:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1);
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;font-size:14px;color:var(--c-text);background:var(--c-bg);-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--c-text)}
+a{color:var(--c-primary);text-decoration:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+
+/* ===== Header ===== */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:var(--c-surface);border-bottom:1px solid var(--c-border);flex-shrink:0;z-index:10}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-logo{width:32px;height:32px;background:var(--c-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center}
+.header-logo svg{width:20px;height:20px;color:#fff}
+.header h1{font-size:16px;font-weight:600;white-space:nowrap}
+.header-stats{display:flex;gap:16px;font-size:12px;color:var(--c-text-sec)}
+.header-stats span{display:flex;align-items:center;gap:4px}
+.header-stats .stat-num{font-weight:600;color:var(--c-text)}
+.header-actions{display:flex;gap:8px;align-items:center}
+
+/* ===== Buttons ===== */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap;border:1px solid transparent}
+.btn svg{width:15px;height:15px}
+.btn-primary{background:var(--c-primary);color:#fff}
+.btn-primary:hover{background:#3d5de5}
+.btn-ghost{background:var(--c-surface);border-color:var(--c-border);color:var(--c-text-sec)}
+.btn-ghost:hover{background:#f8fafc;border-color:#cbd5e1;color:var(--c-text)}
+.btn-danger{background:var(--c-danger-bg);color:var(--c-danger)}
+.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-sm svg{width:13px;height:13px}
+
+/* ===== Today Bar ===== */
+.today-bar{padding:8px 20px;background:#fffbe6;border-bottom:1px solid #fde68a;flex-shrink:0;overflow-x:auto;display:flex;gap:12px;align-items:center}
+.today-bar:empty{display:none}
+.today-bar-label{font-size:12px;font-weight:600;color:#92400e;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.today-item{display:flex;align-items:center;gap:8px;padding:4px 10px;background:#fff;border:1px solid #fde68a;border-radius:20px;font-size:12px;white-space:nowrap}
+.today-item.overdue{border-color:#fca5a5;background:#fef2f2}
+.today-item.overdue .today-item-tag{color:var(--c-danger)}
+.today-item.interview{border-color:#fdba74;background:#fff7ed}
+.today-item.interview .today-item-tag{color:#ea580c}
+.today-item.followup{border-color:#c4b5fd;background:#f5f3ff}
+.today-item.followup .today-item-tag{color:var(--c-purple)}
+.today-item-tag{font-weight:600;font-size:11px}
+.today-item-text{color:var(--c-text)}
+.today-item-btn{padding:2px 8px;font-size:11px;border-radius:4px;background:var(--c-primary);color:#fff;font-weight:500}
+.today-item-btn:hover{opacity:.85}
+
+/* ===== Main Layout ===== */
+.main-layout{display:flex;flex:1;overflow:hidden}
+
+/* ===== Sidebar ===== */
+.sidebar{width:240px;flex-shrink:0;background:var(--c-surface);border-right:1px solid var(--c-border);overflow-y:auto;padding:16px 12px}
+.sidebar-section{margin-bottom:20px}
+.sidebar-section-title{font-size:11px;font-weight:600;color:var(--c-text-mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:0 4px}
+.search-box{position:relative}
+.search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--c-text-mut)}
+.search-box input{width:100%;padding:8px 8px 8px 32px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;outline:none;transition:border-color .15s}
+.search-box input:focus{border-color:var(--c-primary)}
+.filter-group{display:flex;flex-direction:column;gap:4px}
+.filter-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--radius-sm);font-size:13px;color:var(--c-text-sec);cursor:pointer;transition:background .12s}
+.filter-item:hover{background:#f1f5f9}
+.filter-item.active{background:var(--c-primary-bg);color:var(--c-primary);font-weight:500}
+.filter-item .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.filter-item .filter-count{margin-left:auto;font-size:11px;color:var(--c-text-mut);background:#f1f5f9;padding:1px 6px;border-radius:10px}
+.filter-item.active .filter-count{background:var(--c-primary);color:#fff}
+.filter-select{width:100%;padding:7px 8px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;background:var(--c-surface);outline:none;cursor:pointer}
+.filter-select:focus{border-color:var(--c-primary)}
+.sidebar-stats{background:#f8fafc;border-radius:var(--radius-sm);padding:12px}
+.sidebar-stat-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.sidebar-stat-row:last-child{margin-bottom:0}
+.sidebar-stat-row .stat-label{color:var(--c-text-sec)}
+.sidebar-stat-row .stat-val{font-weight:600}
+.sidebar-stat-row .stat-val.green{color:var(--c-success)}
+.sidebar-stat-row .stat-val.red{color:var(--c-danger)}
+
+/* ===== Kanban ===== */
+.kanban-container{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.kanban-board{display:flex;gap:12px;padding:16px;overflow-x:auto;overflow-y:hidden;flex:1;align-items:flex-start}
+.kanban-column{width:260px;flex-shrink:0;background:#f8fafc;border-radius:var(--radius);border:1px solid var(--c-border);display:flex;flex-direction:column;max-height:100%;transition:background .15s,border-color .15s}
+.kanban-column.drag-over{background:var(--c-primary-bg);border-color:var(--c-primary);border-style:dashed}
+.kanban-column-header{display:flex;align-items:center;gap:8px;padding:12px 14px 8px;flex-shrink:0}
+.kanban-column-header .status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.kanban-column-header .col-title{font-size:13px;font-weight:600;color:var(--c-text)}
+.kanban-column-header .col-count{font-size:11px;color:var(--c-text-mut);background:#e2e8f0;padding:1px 7px;border-radius:10px;margin-left:auto}
+.kanban-column-body{padding:4px 8px 8px;overflow-y:auto;flex:1;min-height:60px;display:flex;flex-direction:column;gap:8px}
+
+/* ===== Card ===== */
+.kanban-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:12px;cursor:grab;transition:box-shadow .15s,border-color .15s,transform .1s;position:relative}
+.kanban-card:hover{box-shadow:var(--shadow-md);border-color:#cbd5e1}
+.kanban-card:active{cursor:grabbing}
+.kanban-card.dragging{opacity:.4;transform:rotate(1deg)}
+.kanban-card.selected{border-color:var(--c-primary);box-shadow:0 0 0 2px var(--c-primary-bg)}
+.card-top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.card-company{font-size:13px;font-weight:600;color:var(--c-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.card-platform{font-size:10px;color:var(--c-text-mut);background:#f1f5f9;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.card-position{font-size:12px;color:var(--c-text-sec);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.card-tag{font-size:11px;padding:2px 6px;border-radius:4px;background:#f1f5f9;color:var(--c-text-sec)}
+.card-tag.salary{background:#fef3c7;color:#92400e}
+.card-tag.location{background:#e0f2fe;color:#0369a1}
+.card-tag.type{background:#f0fdf4;color:#15803d}
+.card-footer{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--c-text-mut)}
+.card-footer .card-date{display:flex;align-items:center;gap:3px}
+.card-footer .card-interviews{display:flex;align-items:center;gap:3px;color:var(--c-warning);font-weight:500}
+.card-footer svg{width:12px;height:12px}
+.card-urgent-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--c-danger);border-radius:50%}
+
+/* ===== Detail Panel ===== */
+.detail-panel{width:360px;flex-shrink:0;background:var(--c-surface);border-left:1px solid var(--c-border);overflow-y:auto;display:flex;flex-direction:column}
+.detail-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--c-text-mut);gap:12px;padding:40px;text-align:center}
+.detail-empty svg{width:48px;height:48px;opacity:.3}
+.detail-empty p{font-size:13px;line-height:1.6}
+.detail-content{padding:20px}
+.detail-header{margin-bottom:16px}
+.detail-header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.detail-header h2{font-size:16px;font-weight:600;line-height:1.4}
+.detail-header h2 .detail-company{color:var(--c-primary)}
+.detail-actions-row{display:flex;gap:6px}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.status-badge .status-dot{width:8px;height:8px;border-radius:50%}
+.status-select{padding:4px 8px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:12px;outline:none;cursor:pointer;background:var(--c-surface)}
+.detail-info{background:#f8fafc;border-radius:var(--radius-sm);padding:12px;margin-bottom:16px}
+.info-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:13px}
+.info-row .info-label{color:var(--c-text-mut);width:60px;flex-shrink:0;font-size:12px}
+.info-row .info-value{color:var(--c-text);flex:1;word-break:break-all}
+.info-row .info-value.salary{color:#92400e;font-weight:500}
+.detail-section{margin-bottom:20px}
+.detail-section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.detail-section-title h3{font-size:13px;font-weight:600;color:var(--c-text)}
+.detail-requirements{font-size:13px;color:var(--c-text-sec);line-height:1.7;white-space:pre-wrap;background:#f8fafc;padding:12px;border-radius:var(--radius-sm)}
+.detail-notes{font-size:13px;color:var(--c-text-sec);line-height:1.7;white-space:pre-wrap;padding:8px 0}
+
+/* ===== Timeline ===== */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--c-border)}
+.timeline-item{position:relative;padding-bottom:16px}
+.timeline-item:last-child{padding-bottom:0}
+.timeline-dot{position:absolute;left:-18px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--c-surface);box-shadow:0 0 0 2px var(--c-border)}
+.timeline-content{background:#f8fafc;border-radius:var(--radius-sm);padding:10px 12px}
+.timeline-label{font-size:13px;font-weight:500;color:var(--c-text);margin-bottom:2px}
+.timeline-date{font-size:11px;color:var(--c-text-mut);margin-bottom:4px}
+.timeline-detail{font-size:12px;color:var(--c-text-sec)}
+.timeline-feedback{font-size:12px;color:var(--c-text-sec);margin-top:4px;padding-top:4px;border-top:1px dashed var(--c-border);font-style:italic}
+.timeline-item.interview .timeline-content{background:#fff7ed;border:1px solid #fed7aa;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.timeline-item.interview .timeline-content:hover{border-color:#f59e0b;box-shadow:0 2px 8px rgba(245,158,11,.15)}
+.timeline-item.interview .timeline-date{display:flex;align-items:center;gap:4px}
+.timeline-item.interview .timeline-date::after{content:'点击编辑';font-size:10px;color:#f59e0b;margin-left:auto;opacity:0;transition:opacity .15s}
+.timeline-item.interview .timeline-content:hover .timeline-date::after{opacity:1}
+
+/* ===== Modal ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fadeIn .15s}
+.modal-overlay[hidden]{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--c-surface);border-radius:12px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--c-border);position:sticky;top:0;background:var(--c-surface);z-index:1;border-radius:12px 12px 0 0}
+.modal-header h2{font-size:16px;font-weight:600}
+.modal-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);color:var(--c-text-mut);transition:background .12s}
+.modal-close:hover{background:#f1f5f9;color:var(--c-text)}
+.modal-close svg{width:18px;height:18px}
+.modal-body{padding:20px}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--c-border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--c-surface)}
+
+/* ===== Form ===== */
+.form-group{margin-bottom:14px}
+.form-row{display:flex;gap:12px}
+.form-row .form-group{flex:1}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--c-text-sec);margin-bottom:5px}
+.form-label .req{color:var(--c-danger)}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 10px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:14px;outline:none;transition:border-color .15s;background:var(--c-surface)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--c-primary)}
+.form-textarea{resize:vertical;min-height:72px;line-height:1.5}
+.form-hint{font-size:11px;color:var(--c-text-mut);margin-top:4px}
+.link-parse-box{display:flex;gap:8px;margin-bottom:16px}
+.link-parse-box .form-input{flex:1}
+.link-detected{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--c-primary-bg);color:var(--c-primary);border-radius:4px;font-size:12px;font-weight:500;margin-bottom:12px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:13px;z-index:200;box-shadow:var(--shadow-md);animation:slideUp .2s}
+.toast[hidden]{display:none}
+.toast.success{background:var(--c-success)}
+.toast.error{background:var(--c-danger)}
+@keyframes slideUp{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ===== Backup Reminder ===== */
+.backup-reminder{padding:8px 20px;background:#fff7ed;border-bottom:1px solid #fed7aa;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9a3412;flex-shrink:0}
+.backup-reminder button{color:var(--c-primary);font-weight:500;text-decoration:underline;font-size:12px}
+
+/* ===== Quick Import ===== */
+.quick-import-box{background:#f0f4ff;border:1px dashed var(--c-primary);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px}
+.quick-import-box .form-label{display:flex;align-items:center;gap:5px;margin-bottom:6px;color:var(--c-primary)}
+
+/* ===== Interview View ===== */
+.view-tabs{display:flex;background:#f1f5f9;border-radius:8px;padding:3px;gap:2px;margin-left:8px}
+.view-tab{padding:6px 14px;font-size:13px;font-weight:500;color:var(--c-text-sec);border-radius:6px;transition:all .15s;white-space:nowrap}
+.view-tab.active{background:#fff;color:var(--c-primary);box-shadow:var(--shadow)}
+.main-layout[hidden]{display:none}
+#view-interview{flex:1;overflow-y:auto;padding:20px}
+.iv-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.iv-toolbar-label{font-size:13px;font-weight:600;color:var(--c-text-sec);white-space:nowrap}
+.iv-toolbar select{padding:8px 10px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;background:#fff;min-width:240px;outline:none}
+.iv-toolbar select:focus{border-color:var(--c-primary)}
+.iv-stats{display:flex;gap:18px;align-items:center;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;flex-wrap:wrap}
+.iv-stat{display:flex;flex-direction:column;min-width:60px}
+.iv-stat b{font-size:20px;font-weight:600;line-height:1.2}
+.iv-stat span{font-size:11px;color:var(--c-text-mut)}
+.iv-progress{flex:1;min-width:140px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.iv-progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--c-primary),var(--c-success));border-radius:4px;transition:width .3s}
+.iv-panel{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.iv-panel-title{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.iv-panel-title svg{width:15px;height:15px;color:var(--c-primary)}
+.iv-jd-text{font-size:13px;color:var(--c-text-sec);white-space:pre-wrap;line-height:1.6;max-height:180px;overflow-y:auto;background:#f8fafc;padding:10px;border-radius:var(--radius-sm)}
+.iv-resume-textarea{width:100%;min-height:150px;padding:10px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;resize:vertical;outline:none}
+.iv-resume-textarea:focus{border-color:var(--c-primary)}
+.iv-hint{font-size:12px;color:var(--c-text-mut);margin-top:6px;line-height:1.5}
+.iv-cat-title{font-size:13px;font-weight:600;margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.iv-cat-title:first-child{margin-top:0}
+.iv-cat-badge{font-size:11px;font-weight:500;color:var(--c-text-mut);background:#f1f5f9;padding:2px 8px;border-radius:10px}
+.iv-pack-title{display:flex;align-items:center;gap:8px;margin:18px 0 10px;font-size:14px;font-weight:600;color:#166534}
+.iv-pack-title .iv-cat-badge{background:#dcfce7;color:#166534}
+.iv-custom-del{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:none;border-radius:6px;background:transparent;color:#94a3b8;cursor:pointer}
+.iv-custom-del:hover{background:#fee2e2;color:#dc2626}
+.iv-pack-tip{font-size:12px;color:var(--c-text-mut);line-height:1.6;margin:0 0 10px;padding:10px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe}
+.iv-pack-textarea{width:100%;min-height:220px;padding:10px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;resize:vertical;outline:none;background:#fff;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.iv-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--radius);margin-bottom:10px;transition:border-color .15s;overflow:hidden}
+.iv-card.open{border-color:var(--c-primary)}
+.iv-card.flash{animation:ivflash 1.4s ease}
+@keyframes ivflash{0%{background:#eef1fe}100%{background:var(--c-surface)}}
+.iv-card-head{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer}
+.iv-card-head:hover{background:#f8fafc}
+.iv-card-q{flex:1;font-size:14px;font-weight:500;line-height:1.5}
+.iv-card-chevron{color:var(--c-text-mut);flex-shrink:0;margin-top:2px;transition:transform .2s}
+.iv-card.open .iv-card-chevron{transform:rotate(90deg)}
+.iv-mastery{flex-shrink:0;font-size:11px;font-weight:600;padding:4px 12px;border-radius:10px;margin-top:1px}
+.iv-mastery.m0{background:#f1f5f9;color:var(--c-text-mut)}
+.iv-mastery.m1{background:#dbeafe;color:#1d4ed8}
+.iv-mastery.m2{background:#dcfce7;color:#166534}
+.iv-card-body{display:none;padding:12px 14px 14px;border-top:1px solid var(--c-border)}
+.iv-card.open .iv-card-body{display:block}
+.iv-section-label{font-size:11px;font-weight:600;color:var(--c-primary);margin:10px 0 5px}
+.iv-framework{font-size:13px;color:var(--c-text-sec);line-height:1.7;background:#f8fafc;border-left:3px solid var(--c-primary);padding:8px 12px;border-radius:0 6px 6px 0;white-space:pre-wrap}
+.iv-answer{width:100%;min-height:100px;padding:10px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;resize:vertical;outline:none;margin-top:4px;background:#fff}
+.iv-answer:focus{border-color:var(--c-primary)}
+.iv-answer-meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--c-text-mut);margin-top:6px}
+.iv-saved-flag{color:var(--c-success);font-weight:500}
+.iv-answer-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.iv-answer-actions .iv-hint-inline{font-size:11px;color:var(--c-text-mut)}
+.iv-eye-hint{font-size:11px;font-weight:400;color:var(--c-text-mut);margin-left:6px}
+.iv-reveal{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;background:#f8fafc;border:1px dashed var(--c-border);border-radius:6px}
+.iv-reveal-btn{font-size:12px;font-weight:600;color:var(--c-text-sec);background:#fff;border:1px solid var(--c-border);border-radius:6px;padding:6px 12px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+.iv-reveal-btn:hover{color:var(--c-primary);border-color:var(--c-primary);background:#eef1fe}
+.iv-reveal-note{font-size:11px;color:var(--c-text-mut);line-height:1.5;flex:1;min-width:150px}
+.iv-fw-wrap{display:none}
+.iv-fw-wrap.show{display:block}
+.iv-fw-wrap .iv-section-label{margin-top:10px}
+.iv-match-badge{font-size:11px;font-weight:600;color:#4338ca;background:#e0e7ff;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle}
+.iv-match-note{font-size:12px;color:#6366f1;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:6px 10px;margin:-4px 0 10px;line-height:1.5}
+.iv-critique{width:100%;min-height:72px;padding:10px;border:1px solid #bfdbfe;border-radius:var(--radius-sm);font-size:13px;line-height:1.6;resize:vertical;outline:none;margin-top:4px;background:#f8fbff}
+.iv-critique:focus{border-color:var(--c-primary)}
+.iv-critique-label{display:flex;align-items:center;gap:6px}
+.iv-done-badge{font-size:10px;font-weight:600;color:#166534;background:#dcfce7;padding:1px 7px;border-radius:8px;margin-left:6px;vertical-align:middle}
+.iv-copy-textarea{width:100%;min-height:300px;padding:10px;border:1px solid var(--c-border);border-radius:var(--radius-sm);font-size:12.5px;line-height:1.65;resize:vertical;outline:none;background:#f8fafc;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.iv-copy-textarea:focus{border-color:var(--c-primary)}
+
+/* ===== Responsive ===== */
+@media(max-width:1024px){
+  .detail-panel{width:300px}
+  .sidebar{width:200px}
+}
+@media(max-width:768px){
+  .header{flex-wrap:wrap;height:auto;padding:8px 12px;gap:8px}
+  .header-stats{display:none}
+  .sidebar{width:100%;max-height:200px;border-right:none;border-bottom:1px solid var(--c-border)}
+  .main-layout{flex-direction:column}
+  .detail-panel{position:fixed;inset:0;z-index:50;width:100%;border-left:none}
+  .detail-panel[hidden]{display:none}
+  .kanban-column{width:240px}
+  .today-bar{padding:8px 12px}
+  .view-tabs{margin-left:0}
+  .view-tab{padding:6px 10px;font-size:12px}
+  #view-interview{padding:12px}
+  .iv-toolbar{gap:8px}
+  .iv-toolbar select{min-width:0;flex:1}
+  .iv-card-q{font-size:14px}
+  .iv-answer,.iv-resume-textarea{font-size:16px}
+  .iv-card-head{min-height:44px}
+  .iv-reveal-btn{min-height:44px;padding:10px 14px;font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1zM9 5h6v2H9V5z"/><path d="M9 12h6M9 16h6" stroke-linecap="round"/></svg>
+    </div>
+    <h1>求职投递管理工作台</h1>
+    <div class="view-tabs">
+      <button class="view-tab active" data-view="kanban">投递看板</button>
+      <button class="view-tab" data-view="interview">模拟面试</button>
+    </div>
+    <div class="header-stats" id="header-stats"></div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-primary" id="btn-add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+      添加投递
+    </button>
+    <button class="btn btn-ghost" id="btn-export-json">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      导出JSON
+    </button>
+    <button class="btn btn-ghost" id="btn-export-csv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8" stroke-linecap="round"/></svg>
+      导出CSV
+    </button>
+    <button class="btn btn-ghost" id="btn-batch-add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke-linecap="round"/></svg>
+      批量添加
+    </button>
+    <button class="btn btn-ghost" id="btn-import">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      导入
+    </button>
+    <input type="file" id="import-file" hidden accept=".json">
+  </div>
+</div>
+
+<!-- ===== Today Bar ===== -->
+<div class="today-bar" id="today-bar"></div>
+
+<!-- ===== Backup Reminder ===== -->
+<div class="backup-reminder" id="backup-reminder" hidden>
+  <span>数据已积累 <strong id="reminder-count">0</strong> 条，建议导出备份以防丢失</span>
+  <button id="btn-reminder-export">立即导出</button>
+</div>
+
+<!-- ===== Main Layout ===== -->
+<div class="main-layout" id="view-kanban">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+        <input type="text" id="search-input" placeholder="搜索公司/岗位/地点..." style="font-size:13px">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">投递状态</div>
+      <div class="filter-group" id="status-filters"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">岗位类型</div>
+      <select class="filter-select" id="filter-jobtype">
+        <option value="all">全部类型</option>
+        <option value="全职">全职</option>
+        <option value="实习">实习</option>
+        <option value="兼职">兼职</option>
+        <option value="校招">校招</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">公司筛选</div>
+      <select class="filter-select" id="filter-company">
+        <option value="">全部公司</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">排序方式</div>
+      <select class="filter-select" id="filter-sort">
+        <option value="updatedAt">最近更新</option>
+        <option value="createdAt">创建时间</option>
+        <option value="appliedDate">投递时间</option>
+        <option value="company">公司名称</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">数据统计</div>
+      <div class="sidebar-stats" id="sidebar-stats"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" id="btn-clear-sample">清空示例数据</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-danger btn-sm" style="width:100%;justify-content:center" id="btn-clear-all">清空所有数据</button>
+    </div>
+  </aside>
+
+  <!-- Kanban -->
+  <main class="kanban-container">
+    <div class="kanban-board" id="kanban-board"></div>
+  </main>
+
+  <!-- Detail Panel -->
+  <aside class="detail-panel" id="detail-panel">
+    <div class="detail-empty" id="detail-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4" stroke-linecap="round"/></svg>
+      <p>点击看板中的卡片<br>查看投递详情与进度时间线</p>
+    </div>
+    <div class="detail-content" id="detail-content" hidden></div>
+  </aside>
+
+</div>
+
+<!-- ===== Interview View ===== -->
+<div id="view-interview" hidden>
+  <div class="iv-toolbar">
+    <span class="iv-toolbar-label">目标岗位</span>
+    <select id="iv-target"></select>
+    <span class="iv-hint-inline" style="font-size:11px;color:var(--c-text-mut)">选中后：专业题按岗位方向自动换、题面带入公司/岗位名</span>
+    <button class="btn btn-ghost btn-sm" id="iv-toggle-jd">查看岗位JD</button>
+    <button class="btn btn-ghost btn-sm" id="iv-toggle-resume">我的简历</button>
+    <button class="btn btn-ghost btn-sm" id="iv-import-pack">导入定制题包</button>
+    <button class="btn btn-ghost btn-sm" id="iv-gen-pack">让 AI 按岗位出题</button>
+    <button class="btn btn-ghost btn-sm" id="iv-export-answers">导出答案给 AI 点评</button>
+    <button class="btn btn-primary btn-sm" id="iv-random">随机一题</button>
+  </div>
+
+  <div class="iv-stats" id="iv-stats"></div>
+
+  <div class="iv-panel" id="iv-jd-panel" hidden>
+    <div class="iv-panel-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4" stroke-linecap="round"/></svg>
+      <span id="iv-jd-title">岗位 JD</span>
+    </div>
+    <div class="iv-jd-text" id="iv-jd-text"></div>
+    <p class="iv-hint">答题时把 JD 里的关键词自然融进答案，匹配度会明显提升</p>
+  </div>
+
+  <div class="iv-panel" id="iv-resume-panel" hidden>
+    <div class="iv-panel-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      我的简历（仅存本地）
+    </div>
+    <textarea class="iv-resume-textarea" id="iv-resume" placeholder="把你的简历内容粘贴到这里（教育经历、实习经历、项目经历、技能等）。练习时可以对照简历组织答案，避免面试时想不起来自己写了什么。"></textarea>
+    <p class="iv-hint" id="iv-resume-hint">自动保存 · 刷新不丢</p>
+  </div>
+
+  <div id="iv-questions"></div>
+</div>
+
+<!-- ===== Custom Question Pack Modal ===== -->
+<div class="modal-overlay" id="iv-pack-modal" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>导入 JD 定制题包</h2>
+      <button class="modal-close" data-close-modal="iv-pack-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="iv-pack-tip">把 AI 生成的定制面试题 JSON 粘贴到这里（支持单条对象或多条数组）。每条题包含：问题 q、答题框架 fw、考察点 probe（可选）、分类 cat（可选）、关联公司 company（可选，自动匹配投递记录）。题面里可写 {company} / {position} 占位符，会自动替换成当前目标岗位的公司名和岗位名。</p>
+      <textarea class="iv-pack-textarea" id="iv-pack-input" placeholder='粘贴 JSON，例如：
+[
+  {"q":"如果让你为 Anker 一款新品策划欧洲市场的上市推广，你会怎么规划？","fw":"【框架】目标→人群→渠道→节奏→指标…","probe":"整合营销落地能力","cat":"定制·安克创新","company":"安克创新"}
+]'></textarea>
+      <p class="iv-hint" id="iv-pack-hint">导入后题包会显示在「JD 定制题」区域，可练习、记答案、标掌握度</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close-modal="iv-pack-modal">取消</button>
+      <button class="btn btn-primary" id="iv-pack-save">导入题包</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Copy for AI Critique Modal ===== -->
+<div class="modal-overlay" id="iv-copy-modal" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="iv-copy-title">复制给 AI 点评</h2>
+      <button class="modal-close" data-close-modal="iv-copy-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="iv-pack-tip" id="iv-copy-tip">下面这段内容已按「题目 + 考察点 + 框架 + 我的答案 + 点评要求」整理好。点「复制」后，直接粘贴给 AI（小台）即可拿到点评。</p>
+      <textarea class="iv-copy-textarea" id="iv-copy-text"></textarea>
+      <p class="iv-hint" id="iv-copy-hint"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close-modal="iv-copy-modal">关闭</button>
+      <button class="btn btn-ghost" id="iv-copy-download">下载 .md 文件</button>
+      <button class="btn btn-primary" id="iv-copy-do">复制</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Add/Edit Modal ===== -->
+<div class="modal-overlay" id="add-modal" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="add-modal-title">添加投递记录</h2>
+      <button class="modal-close" data-close-modal="add-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="link-parse-box">
+        <input type="text" class="form-input" id="link-input" placeholder="粘贴招聘链接（Boss直聘/拉勾/猎聘等）" style="font-size:13px">
+        <button class="btn btn-ghost" id="btn-parse-link">解析</button>
+      </div>
+      <div id="link-detected-box" hidden></div>
+
+      <div class="quick-import-box">
+        <label class="form-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>快速导入（粘贴AI解析结果）</label>
+        <textarea class="form-textarea" id="quick-import-input" placeholder='粘贴小台解析的JSON数据，自动填充下方表单' style="min-height:56px;font-size:12px;font-family:monospace"></textarea>
+        <button class="btn btn-primary btn-sm" id="btn-quick-import" style="margin-top:6px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9"/></svg>
+          自动填充表单
+        </button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">公司名称 <span class="req">*</span></label>
+          <input type="text" class="form-input" id="form-company" placeholder="如：腾讯">
+        </div>
+        <div class="form-group">
+          <label class="form-label">岗位名称 <span class="req">*</span></label>
+          <input type="text" class="form-input" id="form-position" placeholder="如：高级前端工程师">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">工作地点</label>
+          <input type="text" class="form-input" id="form-location" placeholder="如：深圳">
+        </div>
+        <div class="form-group">
+          <label class="form-label">薪资范围</label>
+          <input type="text" class="form-input" id="form-salary" placeholder="如：25-40K·14薪">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">岗位类型</label>
+          <select class="form-select" id="form-jobtype">
+            <option value="全职">全职</option>
+            <option value="实习">实习</option>
+            <option value="兼职">兼职</option>
+            <option value="校招">校招</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">投递状态</label>
+          <select class="form-select" id="form-status">
+            <option value="pending">待投递</option>
+            <option value="applied">已投递</option>
+            <option value="screening">简历筛选中</option>
+            <option value="interview">面试中</option>
+            <option value="offer">Offer</option>
+            <option value="rejected">已拒绝</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">投递日期</label>
+          <input type="date" class="form-input" id="form-applied-date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">岗位要求</label>
+        <textarea class="form-textarea" id="form-requirements" placeholder="粘贴岗位JD或关键要求..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-textarea" id="form-notes" placeholder="对这家公司/岗位的想法..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close-modal="add-modal">取消</button>
+      <button class="btn btn-primary" id="btn-save-application">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Interview Modal ===== -->
+<div class="modal-overlay" id="interview-modal" hidden>
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h2 id="interview-modal-title">添加面试轮次</h2>
+      <button class="modal-close" data-close-modal="interview-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="interview-app-id">
+      <input type="hidden" id="interview-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">轮次名称 <span class="req">*</span></label>
+          <input type="text" class="form-input" id="iv-round" placeholder="如：一面、二面、HR面">
+        </div>
+        <div class="form-group">
+          <label class="form-label">面试形式</label>
+          <select class="form-select" id="iv-format">
+            <option value="视频面试">视频面试</option>
+            <option value="电话面试">电话面试</option>
+            <option value="现场面试">现场面试</option>
+            <option value="笔试">笔试</option>
+            <option value="群面">群面</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">日期 <span class="req">*</span></label>
+          <input type="date" class="form-input" id="iv-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">时间</label>
+          <input type="time" class="form-input" id="iv-time">
+        </div>
+        <div class="form-group">
+          <label class="form-label">面试结果</label>
+          <select class="form-select" id="iv-result">
+            <option value="">未标记</option>
+            <option value="通过">通过</option>
+            <option value="未通过">未通过</option>
+            <option value="待定">待定</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">面试官</label>
+        <input type="text" class="form-input" id="iv-interviewer" placeholder="如：张经理">
+      </div>
+      <div class="form-group">
+        <label class="form-label">面试反馈</label>
+        <textarea class="form-textarea" id="iv-feedback" placeholder="面试感受、问题记录、后续建议..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close-modal="interview-modal">取消</button>
+      <button class="btn btn-primary" id="btn-save-interview">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Status History Modal ===== -->
+<div class="modal-overlay" id="status-modal" hidden>
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <h2 id="status-modal-title">编辑状态变更</h2>
+      <button class="modal-close" data-close-modal="status-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="status-app-id">
+      <input type="hidden" id="status-edit-idx">
+      <div class="form-group">
+        <label class="form-label">状态</label>
+        <input type="text" class="form-input" id="status-edit-label" readonly style="background:#f8fafc;color:var(--c-text-sec)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">变更日期 <span class="req">*</span></label>
+        <input type="date" class="form-input" id="status-edit-date">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btn-delete-status" style="margin-right:auto">删除</button>
+      <button class="btn btn-ghost" data-close-modal="status-modal">取消</button>
+      <button class="btn btn-primary" id="btn-save-status">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Confirm Modal ===== -->
+<div class="modal-overlay" id="confirm-modal" hidden>
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2 id="confirm-title">确认操作</h2>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" style="font-size:14px;line-height:1.6;color:var(--c-text-sec)"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="btn-confirm-cancel">取消</button>
+      <button class="btn btn-danger" id="btn-confirm-ok">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Batch Add Modal ===== -->
+<div class="modal-overlay" id="batch-modal" hidden>
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h2>批量添加投递记录</h2>
+      <button class="modal-close" data-close-modal="batch-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-hint" style="margin-bottom:10px">粘贴JSON数组，每条记录至少包含 company 和 position 字段，其余字段可选。记录将追加到现有数据中。</div>
+      <textarea class="form-textarea" id="batch-input" placeholder='[{"company":"公司A","position":"岗位A","status":"rejected","jobType":"实习",...},{"company":"公司B","position":"岗位B",...}]' style="min-height:240px;font-size:12px;font-family:monospace"></textarea>
+      <div class="form-hint" id="batch-preview" style="margin-top:8px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close-modal="batch-modal">取消</button>
+      <button class="btn btn-primary" id="btn-batch-save">追加导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast" id="toast" hidden></div>
+
+<script>
+// ========================================================================
+//  Configuration
+// ========================================================================
+const STORAGE_KEY = 'wb_jobtracker_data_v1';
+const SAMPLE_FLAG_KEY = 'wb_jobtracker_sample_loaded';
+
+const STATUSES = [
+  { id:'pending',   label:'待投递',     color:'#94a3b8', bg:'#f1f5f9' },
+  { id:'applied',   label:'已投递',     color:'#3b82f6', bg:'#eff6ff' },
+  { id:'screening', label:'简历筛选中', color:'#8b5cf6', bg:'#f5f3ff' },
+  { id:'interview', label:'面试中',     color:'#f59e0b', bg:'#fffbeb' },
+  { id:'offer',     label:'Offer',      color:'#10b981', bg:'#ecfdf5' },
+  { id:'rejected',  label:'已拒绝',     color:'#ef4444', bg:'#fef2f2' },
+];
+const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.id, s]));
+
+const PLATFORMS = [
+  { pattern:/zhipin\.com/i,     name:'Boss直聘' },
+  { pattern:/lagou\.com/i,      name:'拉勾网' },
+  { pattern:/liepin\.com/i,     name:'猎聘' },
+  { pattern:/51job\.com/i,      name:'前程无忧' },
+  { pattern:/zhaopin\.com/i,    name:'智联招聘' },
+  { pattern:/nowcoder\.com/i,   name:'牛客网' },
+  { pattern:/boss\.zhipin\.com/i, name:'Boss直聘' },
+];
+
+// ========================================================================
+//  State
+// ========================================================================
+let state = {
+  data: [],
+  selectedId: null,
+  filters: { search:'', status:'all', company:'', jobType:'all', sort:'updatedAt' },
+  draggedId: null,
+  editingAppId: null,
+  confirmCallback: null,
+};
+
+// ========================================================================
+//  Utilities
+// ========================================================================
+function uuid() {
+  return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+function nowTimestamp() {
+  return Date.now();
+}
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function formatDateShort(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function resultBadgeStyle(result) {
+  if (result === '通过') return 'background:#dcfce7;color:#166534;border:1px solid #bbf7d0';
+  if (result === '未通过') return 'background:#fee2e2;color:#991b1b;border:1px solid #fecaca';
+  if (result === '待定') return 'background:#fef9c3;color:#854d0e;border:1px solid #fde047';
+  return 'background:#f1f5f9;color:#475569;border:1px solid #e2e8f0';
+}
+
+function daysAgo(dateStr) {
+  if (!dateStr) return 0;
+  const d = new Date(dateStr);
+  const today = new Date();
+  return Math.floor((today - d) / (1000 * 60 * 60 * 24));
+}
+function detectPlatform(url) {
+  if (!url) return '';
+  for (const p of PLATFORMS) {
+    if (p.pattern.test(url)) return p.name;
+  }
+  return '企业官网';
+}
+function escapeHtml(text) {
+  if (text == null) return '';
+  return String(text)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast' + (type ? ' ' + type : '');
+  toast.hidden = false;
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.hidden = true; }, 2500);
+}
+
+// ========================================================================
+//  Data Layer
+// ========================================================================
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        state.data = parsed;
+        return;
+      }
+    }
+  } catch(e) { console.warn('数据加载失败:', e); }
+  // First time — load sample data
+  if (!localStorage.getItem(SAMPLE_FLAG_KEY)) {
+    state.data = getSampleData();
+    localStorage.setItem(SAMPLE_FLAG_KEY, '1');
+    saveData();
+  }
+}
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+  } catch(e) {
+    showToast('数据保存失败：' + e.message, 'error');
+  }
+}
+function getSampleData() {
+  const now = nowTimestamp();
+  const day = 86400000;
+  return [
+    {
+      id: uuid(), company:'腾讯', position:'高级前端工程师', location:'深圳',
+      salary:'25-40K·14薪', jobType:'全职', link:'https://www.zhipin.com/job_detail/abc123.html',
+      platform:'Boss直聘', requirements:'1. 3年以上前端开发经验\n2. 精通React/Vue等框架\n3. 熟悉TypeScript\n4. 有大型项目经验优先',
+      status:'pending', appliedDate:'',
+      interviews: [], notes:'对微信团队的前端岗位很感兴趣，需要准备React源码相关的问题。',
+      statusHistory: [{ status:'pending', date: formatDate(new Date(now - 5*day)) }],
+      createdAt: now - 5*day, updatedAt: now - 5*day,
+    },
+    {
+      id: uuid(), company:'字节跳动', position:'产品经理', location:'北京',
+      salary:'30-50K·16薪', jobType:'全职', link:'https://www.liepin.com/job/xyz789.shtml',
+      platform:'猎聘', requirements:'1. 本科及以上学历\n2. 3年以上互联网产品经验\n3. 有内容/社区产品经验优先\n4. 数据驱动，有AB测试经验',
+      status:'applied', appliedDate: formatDate(new Date(now - 8*day)),
+      interviews: [], notes:'通过猎头推荐，职位匹配度较高。投递后还没有收到回复，需要主动跟进。',
+      statusHistory: [
+        { status:'pending', date: formatDate(new Date(now - 10*day)) },
+        { status:'applied', date: formatDate(new Date(now - 8*day)) },
+      ],
+      createdAt: now - 10*day, updatedAt: now - 8*day,
+    },
+    {
+      id: uuid(), company:'阿里巴巴', position:'Java开发工程师', location:'杭州',
+      salary:'20-35K·16薪', jobType:'全职', link:'https://www.zhipin.com/job_detail/def456.html',
+      platform:'Boss直聘', requirements:'1. 精通Java编程\n2. 熟悉Spring生态\n3. 有高并发系统经验\n4. 了解分布式架构',
+      status:'screening', appliedDate: formatDate(new Date(now - 5*day)),
+      interviews: [], notes:'HR说简历已经转给业务部门评估了。',
+      statusHistory: [
+        { status:'pending', date: formatDate(new Date(now - 7*day)) },
+        { status:'applied', date: formatDate(new Date(now - 5*day)) },
+        { status:'screening', date: formatDate(new Date(now - 3*day)) },
+      ],
+      createdAt: now - 7*day, updatedAt: now - 3*day,
+    },
+    {
+      id: uuid(), company:'美团', position:'数据分析师', location:'北京',
+      salary:'18-30K·14薪', jobType:'全职', link:'https://www.nowcoder.com/job/ghi012',
+      platform:'牛客网', requirements:'1. 统计学/数学相关专业\n2. 精通SQL和Python\n3. 有数据分析项目经验\n4. 良好的商业理解力',
+      status:'interview', appliedDate: formatDate(new Date(now - 6*day)),
+      interviews: [
+        { id:uuid(), round:'一面', date: formatDate(new Date(now - 2*day)), time:'14:00', format:'视频面试', interviewer:'王技术经理', feedback:'主要考察SQL和业务理解，整体回答不错，已通过。' },
+        { id:uuid(), round:'二面', date: todayStr(), time:'14:00', format:'视频面试', interviewer:'李总监', feedback:'' },
+      ],
+      notes:'二面今天下午，需要准备业务案例和数据分析思路。',
+      statusHistory: [
+        { status:'pending', date: formatDate(new Date(now - 8*day)) },
+        { status:'applied', date: formatDate(new Date(now - 6*day)) },
+        { status:'screening', date: formatDate(new Date(now - 4*day)) },
+        { status:'interview', date: formatDate(new Date(now - 2*day)) },
+      ],
+      createdAt: now - 8*day, updatedAt: now - 1*day,
+    },
+    {
+      id: uuid(), company:'小红书', position:'UI设计师', location:'上海',
+      salary:'20-35K·14薪', jobType:'全职', link:'https://www.zhipin.com/job_detail/jkl345.html',
+      platform:'Boss直聘', requirements:'1. 设计相关专业本科及以上\n2. 3年以上UI设计经验\n3. 精通Figma/Sketch\n4. 有消费类App设计经验优先',
+      status:'offer', appliedDate: formatDate(new Date(now - 15*day)),
+      interviews: [
+        { id:uuid(), round:'一面', date: formatDate(new Date(now - 10*day)), time:'10:00', format:'视频面试', interviewer:'赵设计总监', feedback:'作品集评价很高，沟通顺畅。' },
+        { id:uuid(), round:'二面', date: formatDate(new Date(now - 7*day)), time:'15:00', format:'现场面试', interviewer:'钱VP', feedback:'聊了设计理念和未来规划，感觉不错。' },
+        { id:uuid(), round:'HR面', date: formatDate(new Date(now - 4*day)), time:'11:00', format:'电话面试', interviewer:'孙HR', feedback:'谈了薪资期望和入职时间，发了Offer。' },
+      ],
+      notes:'收到Offer！薪资符合预期，需要在下周五前回复。',
+      statusHistory: [
+        { status:'pending', date: formatDate(new Date(now - 17*day)) },
+        { status:'applied', date: formatDate(new Date(now - 15*day)) },
+        { status:'screening', date: formatDate(new Date(now - 12*day)) },
+        { status:'interview', date: formatDate(new Date(now - 10*day)) },
+        { status:'offer', date: formatDate(new Date(now - 4*day)) },
+      ],
+      createdAt: now - 17*day, updatedAt: now - 4*day,
+    },
+  ];
+}
+
+// ========================================================================
+//  Filter & Sort
+// ========================================================================
+function getFilteredData() {
+  let result = state.data.filter(app => {
+    const f = state.filters;
+    if (f.search) {
+      const q = f.search.toLowerCase();
+      const hay = (app.company + ' ' + app.position + ' ' + (app.location||'')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (f.status !== 'all' && app.status !== f.status) return false;
+    if (f.company && app.company !== f.company) return false;
+    if (f.jobType !== 'all' && app.jobType !== f.jobType) return false;
+    return true;
+  });
+  const sortBy = state.filters.sort;
+  result.sort((a,b) => {
+    switch(sortBy) {
+      case 'updatedAt': return (b.updatedAt||0) - (a.updatedAt||0);
+      case 'createdAt': return (b.createdAt||0) - (a.createdAt||0);
+      case 'appliedDate': return new Date(b.appliedDate||0) - new Date(a.appliedDate||0);
+      case 'company': return (a.company||'').localeCompare(b.company||'', 'zh-CN');
+      default: return 0;
+    }
+  });
+  return result;
+}
+
+// ========================================================================
+//  Today's Tasks
+// ========================================================================
+function getTodayTasks() {
+  const tasks = [];
+  const today = todayStr();
+  state.data.forEach(app => {
+    // Today's interviews
+    if (app.interviews) {
+      app.interviews.forEach(iv => {
+        if (iv.date === today) {
+          tasks.push({
+            type:'interview',
+            tag:'今日面试',
+            text: app.company + ' · ' + iv.round + (iv.time ? ' ' + iv.time : ''),
+            appId: app.id,
+            actionLabel:'查看',
+            action:'select',
+          });
+        }
+      });
+    }
+    // Overdue pending (created > 3 days ago, still pending)
+    if (app.status === 'pending') {
+      const age = daysAgo(formatDate(new Date(app.createdAt)));
+      if (age >= 3) {
+        tasks.push({
+          type:'overdue',
+          tag:'建议投递',
+          text: app.company + ' · ' + app.position + '（已添加' + age + '天）',
+          appId: app.id,
+          actionLabel:'立即投递',
+          action:'apply',
+        });
+      }
+    }
+    // Follow-up needed (applied > 7 days ago, still in applied/screening)
+    if (app.status === 'applied' || app.status === 'screening') {
+      const lastUpdate = app.statusHistory && app.statusHistory.length > 0
+        ? app.statusHistory[app.statusHistory.length - 1].date
+        : app.appliedDate;
+      const age = daysAgo(lastUpdate);
+      if (age >= 7) {
+        tasks.push({
+          type:'followup',
+          tag:'建议跟进',
+          text: app.company + ' · ' + app.position + '（' + age + '天未更新）',
+          appId: app.id,
+          actionLabel:'查看',
+          action:'select',
+        });
+      }
+    }
+  });
+  return tasks;
+}
+
+function renderTodayBar() {
+  const tasks = getTodayTasks();
+  const bar = document.getElementById('today-bar');
+  if (tasks.length === 0) {
+    bar.innerHTML = '';
+    return;
+  }
+  let html = '<span class="today-bar-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke-linecap="round"/></svg>今天要处理</span>';
+  tasks.forEach(t => {
+    html += '<div class="today-item ' + t.type + '">' +
+      '<span class="today-item-tag">' + t.tag + '</span>' +
+      '<span class="today-item-text">' + escapeHtml(t.text) + '</span>' +
+      '<button class="today-item-btn" data-today-action="' + t.action + '" data-app-id="' + t.appId + '">' + t.actionLabel + '</button>' +
+    '</div>';
+  });
+  bar.innerHTML = html;
+}
+
+// ========================================================================
+//  Render: Header Stats
+// ========================================================================
+function renderHeaderStats() {
+  const total = state.data.length;
+  const interviewing = state.data.filter(a => a.status === 'interview').length;
+  const offers = state.data.filter(a => a.status === 'offer').length;
+  document.getElementById('header-stats').innerHTML =
+    '<span>共 <span class="stat-num">' + total + '</span> 条</span>' +
+    '<span>面试中 <span class="stat-num">' + interviewing + '</span></span>' +
+    '<span>Offer <span class="stat-num">' + offers + '</span></span>';
+}
+
+// ========================================================================
+//  Render: Sidebar
+// ========================================================================
+function renderSidebar() {
+  // Status filters
+  const statusBox = document.getElementById('status-filters');
+  let html = '<div class="filter-item' + (state.filters.status === 'all' ? ' active' : '') + '" data-status="all">' +
+    '<span class="status-dot" style="background:#64748b"></span>全部' +
+    '<span class="filter-count">' + state.data.length + '</span></div>';
+  STATUSES.forEach(s => {
+    const count = state.data.filter(a => a.status === s.id).length;
+    html += '<div class="filter-item' + (state.filters.status === s.id ? ' active' : '') + '" data-status="' + s.id + '">' +
+      '<span class="status-dot" style="background:' + s.color + '"></span>' + s.label +
+      '<span class="filter-count">' + count + '</span></div>';
+  });
+  statusBox.innerHTML = html;
+
+  // Company filter
+  const companies = [...new Set(state.data.map(a => a.company))].sort();
+  const companySel = document.getElementById('filter-company');
+  companySel.innerHTML = '<option value="">全部公司</option>' +
+    companies.map(c => '<option value="' + escapeHtml(c) + '"' + (state.filters.company === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>').join('');
+
+  // Stats
+  const total = state.data.length;
+  const offerRate = total > 0 ? Math.round(state.data.filter(a => a.status === 'offer').length / total * 100) : 0;
+  const rejectRate = total > 0 ? Math.round(state.data.filter(a => a.status === 'rejected').length / total * 100) : 0;
+  const inProgress = state.data.filter(a => ['applied','screening','interview'].includes(a.status)).length;
+  document.getElementById('sidebar-stats').innerHTML =
+    '<div class="sidebar-stat-row"><span class="stat-label">投递总数</span><span class="stat-val">' + total + '</span></div>' +
+    '<div class="sidebar-stat-row"><span class="stat-label">进行中</span><span class="stat-val">' + inProgress + '</span></div>' +
+    '<div class="sidebar-stat-row"><span class="stat-label">Offer率</span><span class="stat-val green">' + offerRate + '%</span></div>' +
+    '<div class="sidebar-stat-row"><span class="stat-label">拒绝率</span><span class="stat-val red">' + rejectRate + '%</span></div>';
+}
+
+// ========================================================================
+//  Render: Kanban Board
+// ========================================================================
+function renderKanban() {
+  const filtered = getFilteredData();
+  const board = document.getElementById('kanban-board');
+  let html = '';
+  STATUSES.forEach(s => {
+    const cards = filtered.filter(a => a.status === s.id);
+    let cardsHtml = '';
+    if (cards.length === 0) {
+      cardsHtml = '<div style="text-align:center;padding:20px 0;color:var(--c-text-mut);font-size:12px">暂无记录</div>';
+    } else {
+      cardsHtml = cards.map(app => renderCard(app)).join('');
+    }
+    html +=
+      '<div class="kanban-column">' +
+        '<div class="kanban-column-header">' +
+          '<span class="status-dot" style="background:' + s.color + '"></span>' +
+          '<span class="col-title">' + s.label + '</span>' +
+          '<span class="col-count">' + cards.length + '</span>' +
+        '</div>' +
+        '<div class="kanban-column-body" data-status="' + s.id + '">' + cardsHtml + '</div>' +
+      '</div>';
+  });
+  board.innerHTML = html;
+  attachCardEvents();
+  attachDropEvents();
+}
+
+function renderCard(app) {
+  const today = todayStr();
+  const hasTodayInterview = app.interviews && app.interviews.some(iv => iv.date === today);
+  const interviewCount = app.interviews ? app.interviews.length : 0;
+  const isPendingOld = app.status === 'pending' && daysAgo(formatDate(new Date(app.createdAt))) >= 3;
+  const selectedCls = state.selectedId === app.id ? ' selected' : '';
+  const urgentDot = (hasTodayInterview || isPendingOld) ? '<div class="card-urgent-dot"></div>' : '';
+
+  return '<div class="kanban-card' + selectedCls + '" draggable="true" data-id="' + app.id + '">' +
+    urgentDot +
+    '<div class="card-top">' +
+      '<div class="card-company">' + escapeHtml(app.company) + '</div>' +
+      (app.platform ? '<span class="card-platform">' + escapeHtml(app.platform) + '</span>' : '') +
+    '</div>' +
+    '<div class="card-position">' + escapeHtml(app.position) + '</div>' +
+    '<div class="card-tags">' +
+      (app.salary ? '<span class="card-tag salary">' + escapeHtml(app.salary) + '</span>' : '') +
+      (app.location ? '<span class="card-tag location">' + escapeHtml(app.location) + '</span>' : '') +
+      (app.jobType ? '<span class="card-tag type">' + escapeHtml(app.jobType) + '</span>' : '') +
+    '</div>' +
+    '<div class="card-footer">' +
+      '<span class="card-date">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/></svg>' +
+        (app.appliedDate ? formatDateShort(app.appliedDate) : formatDateShort(new Date(app.createdAt))) +
+      '</span>' +
+      (interviewCount > 0 ? '<span class="card-interviews">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+        interviewCount + '轮</span>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+// ========================================================================
+//  Render: Detail Panel
+// ========================================================================
+function renderDetail() {
+  const empty = document.getElementById('detail-empty');
+  const content = document.getElementById('detail-content');
+  if (!state.selectedId) {
+    empty.hidden = false;
+    content.hidden = true;
+    return;
+  }
+  const app = state.data.find(a => a.id === state.selectedId);
+  if (!app) {
+    state.selectedId = null;
+    empty.hidden = false;
+    content.hidden = true;
+    return;
+  }
+  empty.hidden = true;
+  content.hidden = false;
+
+  const s = STATUS_MAP[app.status] || STATUSES[0];
+  let statusOptions = STATUSES.map(st =>
+    '<option value="' + st.id + '"' + (st.id === app.status ? ' selected' : '') + '>' + st.label + '</option>'
+  ).join('');
+
+  let infoRows = '';
+  if (app.salary) infoRows += '<div class="info-row"><span class="info-label">薪资</span><span class="info-value salary">' + escapeHtml(app.salary) + '</span></div>';
+  if (app.location) infoRows += '<div class="info-row"><span class="info-label">地点</span><span class="info-value">' + escapeHtml(app.location) + '</span></div>';
+  if (app.jobType) infoRows += '<div class="info-row"><span class="info-label">类型</span><span class="info-value">' + escapeHtml(app.jobType) + '</span></div>';
+  if (app.platform) infoRows += '<div class="info-row"><span class="info-label">平台</span><span class="info-value">' + escapeHtml(app.platform) + '</span></div>';
+  if (app.appliedDate) infoRows += '<div class="info-row"><span class="info-label">投递日</span><span class="info-value">' + formatDate(app.appliedDate) + '</span></div>';
+  if (app.link) infoRows += '<div class="info-row"><span class="info-label">链接</span><a href="' + escapeHtml(app.link) + '" target="_blank" rel="noopener">查看原帖</a></div>';
+
+  let timelineHtml = renderTimeline(app);
+
+  let requirementsHtml = '';
+  if (app.requirements) {
+    requirementsHtml = '<div class="detail-section">' +
+      '<div class="detail-section-title"><h3>岗位要求</h3></div>' +
+      '<div class="detail-requirements">' + escapeHtml(app.requirements) + '</div>' +
+    '</div>';
+  }
+
+  let notesHtml = '';
+  if (app.notes) {
+    notesHtml = '<div class="detail-section">' +
+      '<div class="detail-section-title"><h3>备注</h3></div>' +
+      '<div class="detail-notes">' + escapeHtml(app.notes) + '</div>' +
+    '</div>';
+  }
+
+  content.innerHTML =
+    '<div class="detail-header">' +
+      '<div class="detail-header-top">' +
+        '<h2><span class="detail-company">' + escapeHtml(app.company) + '</span><br>' + escapeHtml(app.position) + '</h2>' +
+        '<div class="detail-actions-row">' +
+          '<button class="btn btn-ghost btn-sm" data-action="edit">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</button>' +
+          '<button class="btn btn-danger btn-sm" data-action="delete">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+      '<select class="status-select" data-action="status-change">' + statusOptions + '</select>' +
+    '</div>' +
+    '<div class="detail-info">' + infoRows + '</div>' +
+    requirementsHtml +
+    '<div class="detail-section">' +
+      '<div class="detail-section-title">' +
+        '<h3>进度时间线</h3>' +
+        '<button class="btn btn-primary btn-sm" data-action="add-interview">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>添加面试' +
+        '</button>' +
+      '</div>' +
+      '<div class="timeline">' + timelineHtml + '</div>' +
+    '</div>' +
+    notesHtml;
+
+  // Attach detail events
+  content.querySelector('[data-action="edit"]').addEventListener('click', () => openEditModal(app.id));
+  content.querySelector('[data-action="delete"]').addEventListener('click', () => confirmDelete(app.id));
+  content.querySelector('[data-action="status-change"]').addEventListener('change', (e) => {
+    changeStatus(app.id, e.target.value);
+  });
+  content.querySelector('[data-action="add-interview"]').addEventListener('click', () => openInterviewModal(app.id));
+}
+
+function renderTimeline(app) {
+  const events = [];
+  // Creation
+  events.push({
+    type:'created', label:'创建投递记录', date: formatDate(new Date(app.createdAt)),
+    detail:'', color:'#94a3b8', sortKey: app.createdAt,
+  });
+  // Status history (deduplicate consecutive same statuses for display)
+  if (app.statusHistory) {
+    let lastStatus = null;
+    app.statusHistory.forEach((h, idx) => {
+      if (h.status === lastStatus) return;
+      lastStatus = h.status;
+      const cfg = STATUS_MAP[h.status];
+      events.push({
+        type:'status', label:'状态 → ' + (cfg ? cfg.label : h.status),
+        date: h.date, detail:'', color: cfg ? cfg.color : '#94a3b8',
+        sortKey: new Date(h.date).getTime() || 0,
+        statusIdx: idx, appId: app.id, status: h.status,
+      });
+    });
+  }
+  // Interviews
+  if (app.interviews) {
+    app.interviews.forEach(iv => {
+      events.push({
+        type:'interview', label: iv.round + ' · ' + (iv.format || ''),
+        date: iv.date + (iv.time ? ' ' + iv.time : ''),
+        detail: (iv.interviewer ? '面试官：' + iv.interviewer : ''),
+        feedback: iv.feedback || '',
+        result: iv.result || '',
+        color:'#f59e0b',
+        sortKey: new Date(iv.date + ' ' + (iv.time || '00:00')).getTime() || new Date(iv.date).getTime() || 0,
+        ivId: iv.id, appId: app.id,
+      });
+    });
+  }
+  events.sort((a,b) => a.sortKey - b.sortKey);
+
+  return events.map(e => {
+    let extra = '';
+    if (e.type === 'interview') {
+      extra = (e.detail ? '<div class="timeline-detail">' + escapeHtml(e.detail) + '</div>' : '') +
+              (e.feedback ? '<div class="timeline-feedback">反馈：' + escapeHtml(e.feedback) + '</div>' : '') +
+              '<div style="margin-top:6px;display:flex;gap:6px">' +
+                '<button class="btn btn-ghost btn-sm" data-action="edit-interview" data-iv-id="' + e.ivId + '" data-app-id="' + e.appId + '">编辑</button>' +
+                '<button class="btn btn-danger btn-sm" data-action="del-interview" data-iv-id="' + e.ivId + '" data-app-id="' + e.appId + '">删除</button>' +
+              '</div>';
+    } else if (e.type === 'status') {
+      extra = '<div style="margin-top:6px;display:flex;gap:6px">' +
+                '<button class="btn btn-ghost btn-sm" data-action="edit-status" data-status-idx="' + e.statusIdx + '" data-app-id="' + e.appId + '">编辑日期</button>' +
+                '<button class="btn btn-danger btn-sm" data-action="del-status" data-status-idx="' + e.statusIdx + '" data-app-id="' + e.appId + '">删除</button>' +
+              '</div>';
+    }
+    const contentAttrs = e.type === 'interview'
+      ? ' data-action="edit-interview" data-iv-id="' + e.ivId + '" data-app-id="' + e.appId + '"'
+      : '';
+    const resultBadge = e.type === 'interview' && e.result
+      ? '<span class="iv-result-badge" style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:500;' + resultBadgeStyle(e.result) + '">' + escapeHtml(e.result) + '</span>'
+      : '';
+    return '<div class="timeline-item' + (e.type === 'interview' ? ' interview' : '') + '">' +
+      '<div class="timeline-dot" style="background:' + e.color + '"></div>' +
+      '<div class="timeline-content"' + contentAttrs + '>' +
+        '<div class="timeline-label">' + escapeHtml(e.label) + resultBadge + '</div>' +
+        '<div class="timeline-date">' + escapeHtml(e.date) + '</div>' +
+        extra +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ========================================================================
+//  Card Events
+// ========================================================================
+function attachCardEvents() {
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.selectedId = card.dataset.id;
+      renderKanban();
+      renderDetail();
+    });
+    card.addEventListener('dragstart', (e) => {
+      state.draggedId = card.dataset.id;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      state.draggedId = null;
+      document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('drag-over'));
+    });
+  });
+}
+
+function attachDropEvents() {
+  document.querySelectorAll('.kanban-column-body').forEach(col => {
+    col.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      col.closest('.kanban-column').classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', (e) => {
+      // Only remove if leaving the column entirely
+      if (!col.contains(e.relatedTarget)) {
+        col.closest('.kanban-column').classList.remove('drag-over');
+      }
+    });
+    col.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.closest('.kanban-column').classList.remove('drag-over');
+      const appId = e.dataTransfer.getData('text/plain') || state.draggedId;
+      const newStatus = col.dataset.status;
+      if (appId && newStatus) {
+        changeStatus(appId, newStatus);
+      }
+    });
+  });
+}
+
+// ========================================================================
+//  Actions
+// ========================================================================
+function changeStatus(appId, newStatus) {
+  const app = state.data.find(a => a.id === appId);
+  if (!app || app.status === newStatus) return;
+  app.status = newStatus;
+  app.updatedAt = nowTimestamp();
+  if (!app.statusHistory) app.statusHistory = [];
+  // Avoid duplicate consecutive statuses
+  const last = app.statusHistory[app.statusHistory.length - 1];
+  if (!last || last.status !== newStatus) {
+    app.statusHistory.push({ status: newStatus, date: todayStr() });
+  }
+  // If moved to applied and no appliedDate, set it
+  if (newStatus === 'applied' && !app.appliedDate) {
+    app.appliedDate = todayStr();
+  }
+  saveData();
+  renderAll();
+  showToast('状态已更新为「' + (STATUS_MAP[newStatus] ? STATUS_MAP[newStatus].label : newStatus) + '」', 'success');
+}
+
+function openStatusModal(appId, statusIdx) {
+  const app = state.data.find(a => a.id === appId);
+  const h = app && app.statusHistory ? app.statusHistory[statusIdx] : null;
+  if (!h) return;
+  document.getElementById('status-app-id').value = appId;
+  document.getElementById('status-edit-idx').value = statusIdx;
+  const cfg = STATUS_MAP[h.status];
+  document.getElementById('status-edit-label').value = cfg ? cfg.label : h.status;
+  document.getElementById('status-edit-date').value = h.date || '';
+  document.getElementById('status-modal-title').textContent = '编辑状态变更';
+  document.getElementById('status-modal').hidden = false;
+}
+
+function saveStatusHistory() {
+  const appId = document.getElementById('status-app-id').value;
+  const idx = parseInt(document.getElementById('status-edit-idx').value, 10);
+  const date = document.getElementById('status-edit-date').value;
+  if (!date) { showToast('请选择日期', 'error'); return; }
+  const app = state.data.find(a => a.id === appId);
+  if (app && app.statusHistory && app.statusHistory[idx]) {
+    app.statusHistory[idx].date = date;
+    app.updatedAt = nowTimestamp();
+    saveData();
+    renderAll();
+    showToast('状态日期已更新', 'success');
+  }
+  document.getElementById('status-modal').hidden = true;
+}
+
+function deleteStatusHistory(appId, idx) {
+  const app = state.data.find(a => a.id === appId);
+  if (!app || !app.statusHistory || idx < 0 || idx >= app.statusHistory.length) return;
+  showConfirm(
+    '删除状态记录',
+    '确定要删除这条状态变更记录吗？',
+    () => {
+      app.statusHistory.splice(idx, 1);
+      app.updatedAt = nowTimestamp();
+      saveData();
+      renderAll();
+      showToast('状态记录已删除', 'success');
+    }
+  );
+}
+
+function confirmDelete(appId) {
+  const app = state.data.find(a => a.id === appId);
+  if (!app) return;
+  showConfirm(
+    '删除投递记录',
+    '确定要删除「' + app.company + ' · ' + app.position + '」吗？此操作不可撤销。',
+    () => {
+      state.data = state.data.filter(a => a.id !== appId);
+      state.selectedId = null;
+      saveData();
+      renderAll();
+      showToast('记录已删除', 'success');
+    }
+  );
+}
+
+function deleteInterview(appId, ivId) {
+  showConfirm(
+    '删除面试轮次',
+    '确定要删除这条面试记录吗？',
+    () => {
+      const app = state.data.find(a => a.id === appId);
+      if (app && app.interviews) {
+        app.interviews = app.interviews.filter(iv => iv.id !== ivId);
+        app.updatedAt = nowTimestamp();
+        saveData();
+        renderAll();
+        showToast('面试记录已删除', 'success');
+      }
+    }
+  );
+}
+
+// ========================================================================
+//  Add/Edit Application Modal
+// ========================================================================
+function openAddModal() {
+  state.editingAppId = null;
+  document.getElementById('add-modal-title').textContent = '添加投递记录';
+  document.getElementById('link-input').value = '';
+  document.getElementById('link-detected-box').hidden = true;
+  document.getElementById('form-company').value = '';
+  document.getElementById('form-position').value = '';
+  document.getElementById('form-location').value = '';
+  document.getElementById('form-salary').value = '';
+  document.getElementById('form-jobtype').value = '全职';
+  document.getElementById('form-status').value = 'pending';
+  document.getElementById('form-applied-date').value = '';
+  document.getElementById('form-requirements').value = '';
+  document.getElementById('form-notes').value = '';
+  document.getElementById('add-modal').hidden = false;
+  setTimeout(() => document.getElementById('link-input').focus(), 50);
+}
+
+function openEditModal(appId) {
+  const app = state.data.find(a => a.id === appId);
+  if (!app) return;
+  state.editingAppId = appId;
+  document.getElementById('add-modal-title').textContent = '编辑投递记录';
+  document.getElementById('link-input').value = app.link || '';
+  document.getElementById('link-detected-box').hidden = !app.platform;
+  if (app.platform) {
+    document.getElementById('link-detected-box').innerHTML = '<span class="link-detected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke-linecap="round"/></svg>已识别平台：' + escapeHtml(app.platform) + '</span>';
+  }
+  document.getElementById('form-company').value = app.company || '';
+  document.getElementById('form-position').value = app.position || '';
+  document.getElementById('form-location').value = app.location || '';
+  document.getElementById('form-salary').value = app.salary || '';
+  document.getElementById('form-jobtype').value = app.jobType || '全职';
+  document.getElementById('form-status').value = app.status || 'pending';
+  document.getElementById('form-applied-date').value = app.appliedDate || '';
+  document.getElementById('form-requirements').value = app.requirements || '';
+  document.getElementById('form-notes').value = app.notes || '';
+  document.getElementById('add-modal').hidden = false;
+}
+
+function saveApplication() {
+  const company = document.getElementById('form-company').value.trim();
+  const position = document.getElementById('form-position').value.trim();
+  if (!company || !position) {
+    showToast('请填写公司名称和岗位名称', 'error');
+    return;
+  }
+  const link = document.getElementById('link-input').value.trim();
+  const platform = link ? detectPlatform(link) : '';
+  const status = document.getElementById('form-status').value;
+  const now = nowTimestamp();
+
+  if (state.editingAppId) {
+    // Edit existing
+    const app = state.data.find(a => a.id === state.editingAppId);
+    if (app) {
+      const oldStatus = app.status;
+      app.company = company;
+      app.position = position;
+      app.location = document.getElementById('form-location').value.trim();
+      app.salary = document.getElementById('form-salary').value.trim();
+      app.jobType = document.getElementById('form-jobtype').value;
+      app.link = link;
+      app.platform = platform || app.platform;
+      app.requirements = document.getElementById('form-requirements').value.trim();
+      app.notes = document.getElementById('form-notes').value.trim();
+      app.status = status;
+      const manualDate = document.getElementById('form-applied-date').value;
+      if (manualDate) {
+        app.appliedDate = manualDate;
+      } else if (oldStatus !== status && status === 'applied' && !app.appliedDate) {
+        app.appliedDate = todayStr();
+      }
+      app.updatedAt = now;
+      // If status changed via edit, add to history
+      if (oldStatus !== status) {
+        if (!app.statusHistory) app.statusHistory = [];
+        app.statusHistory.push({ status: status, date: todayStr() });
+      }
+    }
+    showToast('记录已更新', 'success');
+  } else {
+    // Create new
+    const newApp = {
+      id: uuid(),
+      company: company,
+      position: position,
+      location: document.getElementById('form-location').value.trim(),
+      salary: document.getElementById('form-salary').value.trim(),
+      jobType: document.getElementById('form-jobtype').value,
+      link: link,
+      platform: platform,
+      requirements: document.getElementById('form-requirements').value.trim(),
+      status: status,
+      appliedDate: document.getElementById('form-applied-date').value || (status !== 'pending' ? todayStr() : ''),
+      interviews: [],
+      notes: document.getElementById('form-notes').value.trim(),
+      statusHistory: [{ status: status, date: todayStr() }],
+      createdAt: now,
+      updatedAt: now,
+    };
+    state.data.push(newApp);
+    state.selectedId = newApp.id;
+    showToast('投递记录已添加', 'success');
+  }
+  saveData();
+  document.getElementById('add-modal').hidden = true;
+  state.editingAppId = null;
+  renderAll();
+}
+
+function parseLink() {
+  const url = document.getElementById('link-input').value.trim();
+  if (!url) {
+    showToast('请先粘贴链接', 'error');
+    return;
+  }
+  const platform = detectPlatform(url);
+  const box = document.getElementById('link-detected-box');
+  box.hidden = false;
+  box.innerHTML = '<span class="link-detected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke-linecap="round"/></svg>已识别平台：' + escapeHtml(platform) + '</span>' +
+    '<div class="form-hint" style="margin-top:4px;margin-bottom:0">请从招聘页面复制公司、岗位等信息填入下方表单</div>';
+  showToast('已识别平台：' + platform, 'success');
+}
+
+// ========================================================================
+//  Interview Modal
+// ========================================================================
+function openInterviewModal(appId, editIvId) {
+  document.getElementById('interview-app-id').value = appId;
+  document.getElementById('interview-edit-id').value = editIvId || '';
+  if (editIvId) {
+    const app = state.data.find(a => a.id === appId);
+    const iv = app && app.interviews ? app.interviews.find(i => i.id === editIvId) : null;
+    if (iv) {
+      document.getElementById('iv-round').value = iv.round || '';
+      document.getElementById('iv-format').value = iv.format || '视频面试';
+      document.getElementById('iv-date').value = iv.date || '';
+      document.getElementById('iv-time').value = iv.time || '';
+      document.getElementById('iv-result').value = iv.result || '';
+      document.getElementById('iv-interviewer').value = iv.interviewer || '';
+      document.getElementById('iv-feedback').value = iv.feedback || '';
+    }
+  } else {
+    document.getElementById('iv-round').value = '';
+    document.getElementById('iv-format').value = '视频面试';
+    document.getElementById('iv-date').value = todayStr();
+    document.getElementById('iv-time').value = '';
+    document.getElementById('iv-result').value = '';
+    document.getElementById('iv-interviewer').value = '';
+    document.getElementById('iv-feedback').value = '';
+  }
+  document.getElementById('interview-modal-title').textContent = editIvId ? '编辑面试轮次' : '添加面试轮次';
+  document.getElementById('interview-modal').hidden = false;
+}
+
+function saveInterview() {
+  const appId = document.getElementById('interview-app-id').value;
+  const editIvId = document.getElementById('interview-edit-id').value;
+  const round = document.getElementById('iv-round').value.trim();
+  const date = document.getElementById('iv-date').value;
+  if (!round || !date) {
+    showToast('请填写轮次名称和日期', 'error');
+    return;
+  }
+  const app = state.data.find(a => a.id === appId);
+  if (!app) return;
+  if (!app.interviews) app.interviews = [];
+
+  const ivData = {
+    round: round,
+    format: document.getElementById('iv-format').value,
+    date: date,
+    time: document.getElementById('iv-time').value,
+    result: document.getElementById('iv-result').value,
+    interviewer: document.getElementById('iv-interviewer').value.trim(),
+    feedback: document.getElementById('iv-feedback').value.trim(),
+  };
+
+  if (editIvId) {
+    const iv = app.interviews.find(i => i.id === editIvId);
+    if (iv) Object.assign(iv, ivData);
+  } else {
+    ivData.id = uuid();
+    app.interviews.push(ivData);
+    // Auto-move to interview status if not already
+    if (app.status !== 'interview' && app.status !== 'offer') {
+      app.status = 'interview';
+      if (!app.statusHistory) app.statusHistory = [];
+      app.statusHistory.push({ status:'interview', date: todayStr() });
+    }
+  }
+  app.updatedAt = nowTimestamp();
+  saveData();
+  document.getElementById('interview-modal').hidden = true;
+  renderAll();
+  showToast(editIvId ? '面试记录已更新' : '面试轮次已添加', 'success');
+}
+
+// ========================================================================
+//  Confirm Modal
+// ========================================================================
+function showConfirm(title, message, callback) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-message').textContent = message;
+  state.confirmCallback = callback;
+  document.getElementById('confirm-modal').hidden = false;
+}
+
+// ========================================================================
+//  Export / Import
+// ========================================================================
+function exportJSON() {
+  const payload = {
+    __version: 2,
+    exportedAt: todayStr(),
+    applications: state.data,
+    interview: ivState,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '求职投递记录_' + todayStr() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('已导出 ' + state.data.length + ' 条记录（含面试练习数据）', 'success');
+}
+
+function exportCSV() {
+  const headers = ['公司名称','岗位名称','工作地点','薪资范围','岗位类型','投递状态','投递日期','面试轮次','平台','链接','备注'];
+  const rows = state.data.map(app => {
+    const statusLabel = STATUS_MAP[app.status] ? STATUS_MAP[app.status].label : app.status;
+    const ivSummary = (app.interviews || []).map(iv => iv.round + '(' + iv.date + ')').join('; ');
+    return [app.company, app.position, app.location, app.salary, app.jobType, statusLabel, app.appliedDate, ivSummary, app.platform, app.link, app.notes];
+  });
+  const csv = '\ufeff' + [headers, ...rows].map(r =>
+    r.map(c => '"' + String(c || '').replace(/"/g, '""') + '"').join(',')
+  ).join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '求职投递记录_' + todayStr() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('已导出CSV文件', 'success');
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // Support both formats: v2 object { applications, interview } and legacy array
+      const apps = Array.isArray(parsed) ? parsed : parsed.applications;
+      const ivData = (!Array.isArray(parsed) && parsed.interview) ? parsed.interview : null;
+      if (!Array.isArray(apps)) throw new Error('数据格式不正确');
+      // Basic validation
+      for (const item of apps) {
+        if (!item.id || !item.company || !item.position) {
+          throw new Error('数据缺少必要字段（id/company/position）');
+        }
+      }
+      const ivNote = ivData ? '，含面试练习数据' : '';
+      showConfirm(
+        '导入数据',
+        '将导入 ' + apps.length + ' 条记录' + ivNote + '，这会替换当前的所有数据。确定继续吗？',
+        () => {
+          state.data = apps;
+          state.selectedId = null;
+          saveData();
+          if (ivData) {
+            ivState = {
+              resumeText: ivData.resumeText || '',
+              records: ivData.records || {},
+              targetAppId: ivData.targetAppId || '',
+              customQuestions: Array.isArray(ivData.customQuestions) ? ivData.customQuestions : [],
+            };
+            saveIvData();
+            renderInterview();
+          }
+          renderAll();
+          showToast('已导入 ' + apps.length + ' 条记录' + ivNote, 'success');
+        }
+      );
+    } catch(err) {
+      showToast('导入失败：' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ========================================================================
+//  Clear Data
+// ========================================================================
+function clearSampleData() {
+  showConfirm(
+    '清空示例数据',
+    '将删除所有预置的示例记录（不会影响你手动添加的记录）。确定继续吗？',
+    () => {
+      // Keep only records created by user (those without "sample" marker — since we can't distinguish,
+      // we check if the data matches sample companies)
+      // Actually, since sample data was loaded first, clearing it means removing all current data
+      // if user hasn't added anything. Let's just clear everything if it's still the sample set.
+      state.data = [];
+      saveData();
+      renderAll();
+      showToast('示例数据已清空', 'success');
+    }
+  );
+}
+
+function clearAllData() {
+  showConfirm(
+    '清空所有数据',
+    '⚠️ 此操作将永久删除所有投递记录，不可恢复！建议先导出备份。确定要继续吗？',
+    () => {
+      showConfirm(
+        '再次确认',
+        '真的要清空所有数据吗？这是最后一次确认。',
+        () => {
+          state.data = [];
+          state.selectedId = null;
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(SAMPLE_FLAG_KEY);
+          renderAll();
+          showToast('所有数据已清空', 'success');
+        }
+      );
+    }
+  );
+}
+
+// ========================================================================
+//  Backup Reminder
+// ========================================================================
+function checkBackupReminder() {
+  const reminder = document.getElementById('backup-reminder');
+  if (state.data.length >= 30) {
+    document.getElementById('reminder-count').textContent = state.data.length;
+    reminder.hidden = false;
+  } else {
+    reminder.hidden = true;
+  }
+}
+
+// ========================================================================
+//  Render All
+// ========================================================================
+function renderAll() {
+  renderHeaderStats();
+  renderTodayBar();
+  renderSidebar();
+  renderKanban();
+  renderDetail();
+  checkBackupReminder();
+}
+
+// ========================================================================
+//  Event Listeners
+// ========================================================================
+function initEventListeners() {
+  // Add button
+  document.getElementById('btn-add').addEventListener('click', openAddModal);
+
+  // Parse link
+  document.getElementById('btn-parse-link').addEventListener('click', parseLink);
+
+  // Quick import — paste AI-parsed JSON to auto-fill form
+  document.getElementById('btn-quick-import').addEventListener('click', () => {
+    const text = document.getElementById('quick-import-input').value.trim();
+    if (!text) { showToast('请先粘贴JSON数据', 'error'); return; }
+    try {
+      const d = JSON.parse(text);
+      if (d.company) document.getElementById('form-company').value = d.company;
+      if (d.position) document.getElementById('form-position').value = d.position;
+      if (d.location) document.getElementById('form-location').value = d.location;
+      if (d.salary) document.getElementById('form-salary').value = d.salary;
+      if (d.jobType) document.getElementById('form-jobtype').value = d.jobType;
+      if (d.appliedDate) document.getElementById('form-applied-date').value = d.appliedDate;
+      if (d.requirements) document.getElementById('form-requirements').value = d.requirements;
+      if (d.notes) document.getElementById('form-notes').value = d.notes;
+      if (d.link) document.getElementById('link-input').value = d.link;
+      if (d.platform) {
+        const box = document.getElementById('link-detected-box');
+        box.hidden = false;
+        box.innerHTML = '<span class="link-detected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke-linecap="round"/></svg>已识别平台：' + escapeHtml(d.platform) + '</span>';
+      }
+      showToast('已自动填充表单，请检查后点击保存', 'success');
+    } catch(e) {
+      showToast('JSON格式错误：' + e.message, 'error');
+    }
+  });
+  document.getElementById('link-input').addEventListener('paste', () => {
+    setTimeout(() => {
+      const url = document.getElementById('link-input').value.trim();
+      if (url) {
+        const platform = detectPlatform(url);
+        const box = document.getElementById('link-detected-box');
+        box.hidden = false;
+        box.innerHTML = '<span class="link-detected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke-linecap="round"/></svg>已识别平台：' + escapeHtml(platform) + '</span>';
+      }
+    }, 50);
+  });
+
+  // Save application
+  document.getElementById('btn-save-application').addEventListener('click', saveApplication);
+
+  // Save interview
+  document.getElementById('btn-save-interview').addEventListener('click', saveInterview);
+
+  // Save status history
+  document.getElementById('btn-save-status').addEventListener('click', saveStatusHistory);
+  document.getElementById('btn-delete-status').addEventListener('click', () => {
+    const appId = document.getElementById('status-app-id').value;
+    const idx = parseInt(document.getElementById('status-edit-idx').value, 10);
+    document.getElementById('status-modal').hidden = true;
+    deleteStatusHistory(appId, idx);
+  });
+
+  // Modal close buttons
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(btn.dataset.closeModal).hidden = true;
+      state.editingAppId = null;
+    });
+  });
+
+  // Click overlay to close modal
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.hidden = true;
+        state.editingAppId = null;
+      }
+    });
+  });
+
+  // Confirm modal
+  document.getElementById('btn-confirm-ok').addEventListener('click', () => {
+    document.getElementById('confirm-modal').hidden = true;
+    if (state.confirmCallback) {
+      state.confirmCallback();
+      state.confirmCallback = null;
+    }
+  });
+  document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
+    document.getElementById('confirm-modal').hidden = true;
+    state.confirmCallback = null;
+  });
+
+  // Export/Import
+  document.getElementById('btn-export-json').addEventListener('click', exportJSON);
+  document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
+  document.getElementById('btn-import').addEventListener('click', () => document.getElementById('import-file').click());
+  document.getElementById('import-file').addEventListener('change', (e) => {
+    if (e.target.files[0]) importJSON(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('btn-reminder-export').addEventListener('click', exportJSON);
+
+  // Clear data
+  document.getElementById('btn-clear-sample').addEventListener('click', clearSampleData);
+  document.getElementById('btn-clear-all').addEventListener('click', clearAllData);
+
+  // Batch add
+  document.getElementById('btn-batch-add').addEventListener('click', () => {
+    document.getElementById('batch-input').value = '';
+    document.getElementById('batch-preview').textContent = '';
+    document.getElementById('batch-modal').hidden = false;
+  });
+  document.getElementById('batch-input').addEventListener('input', (e) => {
+    const text = e.target.value.trim();
+    const preview = document.getElementById('batch-preview');
+    if (!text) { preview.textContent = ''; return; }
+    try {
+      const arr = JSON.parse(text);
+      if (Array.isArray(arr)) {
+        preview.textContent = '检测到 ' + arr.length + ' 条记录，点击「追加导入」添加到看板';
+        preview.style.color = 'var(--c-success)';
+      } else {
+        preview.textContent = '格式错误：需要JSON数组 [...]';
+        preview.style.color = 'var(--c-danger)';
+      }
+    } catch(err) {
+      preview.textContent = 'JSON格式错误：' + err.message;
+      preview.style.color = 'var(--c-danger)';
+    }
+  });
+  document.getElementById('btn-batch-save').addEventListener('click', () => {
+    const text = document.getElementById('batch-input').value.trim();
+    if (!text) { showToast('请粘贴JSON数据', 'error'); return; }
+    let arr;
+    try {
+      arr = JSON.parse(text);
+      if (!Array.isArray(arr)) throw new Error('需要JSON数组');
+    } catch(err) {
+      showToast('JSON解析失败：' + err.message, 'error');
+      return;
+    }
+    let added = 0;
+    const now = nowTimestamp();
+    arr.forEach(item => {
+      if (!item.company || !item.position) return;
+      const newApp = {
+        id: uuid(),
+        company: item.company,
+        position: item.position,
+        location: item.location || '',
+        salary: item.salary || '',
+        jobType: item.jobType || '全职',
+        link: item.link || '',
+        platform: item.platform || (item.link ? detectPlatform(item.link) : ''),
+        requirements: item.requirements || '',
+        status: item.status || 'pending',
+        appliedDate: item.appliedDate || (item.status && item.status !== 'pending' ? '' : ''),
+        interviews: item.interviews || [],
+        notes: item.notes || '',
+        statusHistory: item.statusHistory || [{ status: item.status || 'pending', date: todayStr() }],
+        createdAt: typeof item.createdAt === 'string' ? new Date(item.createdAt).getTime() : (item.createdAt || now),
+        updatedAt: typeof item.updatedAt === 'string' ? new Date(item.updatedAt).getTime() : (item.updatedAt || now),
+      };
+      // Give interviews IDs if missing
+      newApp.interviews.forEach(iv => { if (!iv.id) iv.id = uuid(); });
+      state.data.push(newApp);
+      added++;
+    });
+    if (added > 0) {
+      saveData();
+      renderAll();
+      document.getElementById('batch-modal').hidden = true;
+      showToast('已添加 ' + added + ' 条记录', 'success');
+    } else {
+      showToast('没有有效记录（缺少 company 或 position）', 'error');
+    }
+  });
+
+  // Search
+  document.getElementById('search-input').addEventListener('input', (e) => {
+    state.filters.search = e.target.value;
+    renderKanban();
+  });
+
+  // Status filter (event delegation)
+  document.getElementById('status-filters').addEventListener('click', (e) => {
+    const item = e.target.closest('.filter-item');
+    if (item) {
+      state.filters.status = item.dataset.status;
+      renderSidebar();
+      renderKanban();
+    }
+  });
+
+  // Job type filter
+  document.getElementById('filter-jobtype').addEventListener('change', (e) => {
+    state.filters.jobType = e.target.value;
+    renderKanban();
+  });
+
+  // Company filter
+  document.getElementById('filter-company').addEventListener('change', (e) => {
+    state.filters.company = e.target.value;
+    renderKanban();
+  });
+
+  // Sort
+  document.getElementById('filter-sort').addEventListener('change', (e) => {
+    state.filters.sort = e.target.value;
+    renderKanban();
+  });
+
+  // Today bar action (event delegation)
+  document.getElementById('today-bar').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-today-action]');
+    if (btn) {
+      const appId = btn.dataset.appId;
+      const action = btn.dataset.todayAction;
+      if (action === 'select') {
+        state.selectedId = appId;
+        renderKanban();
+        renderDetail();
+      } else if (action === 'apply') {
+        changeStatus(appId, 'applied');
+        state.selectedId = appId;
+        renderAll();
+      }
+    }
+  });
+
+  // Detail panel event delegation
+  document.getElementById('detail-content').addEventListener('click', (e) => {
+    const delIvBtn = e.target.closest('[data-action="del-interview"]');
+    if (delIvBtn) {
+      deleteInterview(delIvBtn.dataset.appId, delIvBtn.dataset.ivId);
+      return;
+    }
+    const editIvBtn = e.target.closest('[data-action="edit-interview"]');
+    if (editIvBtn) {
+      openInterviewModal(editIvBtn.dataset.appId, editIvBtn.dataset.ivId);
+      return;
+    }
+    const delStatusBtn = e.target.closest('[data-action="del-status"]');
+    if (delStatusBtn) {
+      deleteStatusHistory(delStatusBtn.dataset.appId, parseInt(delStatusBtn.dataset.statusIdx, 10));
+      return;
+    }
+    const editStatusBtn = e.target.closest('[data-action="edit-status"]');
+    if (editStatusBtn) {
+      openStatusModal(editStatusBtn.dataset.appId, parseInt(editStatusBtn.dataset.statusIdx, 10));
+      return;
+    }
+  });
+
+  // Keyboard: ESC to close modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay:not([hidden])').forEach(m => {
+        m.hidden = true;
+        state.editingAppId = null;
+      });
+    }
+  });
+}
+
+// ========================================================================
+//  Mock Interview Module
+// ========================================================================
+const IV_STORAGE_KEY = 'wb_jobtracker_interview_v1';
+const IV_MASTERY = [
+  { level:0, label:'未练' },
+  { level:1, label:'已练' },
+  { level:2, label:'已掌握' },
+];
+
+let ivState = { resumeText:'', records:{}, targetAppId:'', customQuestions:[] };
+let ivOpenSet = new Set();
+let ivRevealSet = new Set();
+let ivSaveTimers = {};
+let ivCritiqueTimers = {};
+
+const IV_BANK = [
+  // ===== 开场·自我介绍 =====
+  { id:'iv-01', cat:'开场·自我介绍', q:'请做一个 1-3 分钟的自我介绍',
+    probe:'表达能力、重点提炼、岗位匹配度',
+    fw:'【框架：定位 → 匹配 → 动机】\n1. 我是谁：姓名 + 学校专业 + 一句话定位（如"一个用数据说话的市场人"）\n2. 我做过什么：挑与岗位最相关的 1-2 段经历，每段用"做了什么 → 结果数据"收尾\n3. 为什么是我：总结 2-3 个与 JD 直接对应的优势\n4. 为什么来：一句话表达对该公司/岗位的兴趣\n\n⚠️ 控制在 3 分钟内，最亮的经历放最前面，不要念简历。' },
+  { id:'iv-02', cat:'开场·自我介绍', q:'用三个词概括你自己，并各举一个例子',
+    probe:'自我认知、岗位匹配',
+    fw:'选词直接对应岗位要求（JD 要"沟通协调"就别选"安静专注"）。\n每个词的结构：词 → 场景 → 你做了什么 → 体现了这个词，每个例子控制在 30 秒内。\n\n⚠️ 三个词不要互相重复（比如"认真、细心、严谨"算一个词）。' },
+
+  // ===== 求职动机 =====
+  { id:'iv-03', cat:'求职动机', q:'为什么选择 {company} / {position}？',
+    probe:'求职诚意、信息搜集能力',
+    fw:'【框架：行业 → 公司 → 岗位 → 个人】\n1. 行业：这个赛道的机会/趋势（1-2 句）\n2. 公司：具体产品/业务亮点，说明你研究过（忌泛泛说"平台大"）\n3. 岗位：JD 中哪些职责与你的能力和兴趣吻合\n4. 个人：这段经历对你的职业规划意味着什么\n\n⚠️ 没做功课会被追问穿帮，面试前务必查公司近期动态。' },
+  { id:'iv-04', cat:'求职动机', q:'你的职业规划是什么？（未来 3-5 年）',
+    probe:'稳定性、目标感',
+    fw:'【框架：短期胜任 → 中期深耕 → 长期方向】\n1 年内：快速上手岗位，成为能独当一面的人；\n2-3 年：在 XX 方向深耕出代表作；\n3-5 年：成长为能带项目/带团队的人。\n\n⚠️ 规划要和该岗位的成长路径一致，别面运营岗却说想转产品。' },
+  { id:'iv-05', cat:'求职动机', q:'你还面试了哪些公司？如果都给你 offer 怎么选？',
+    probe:'诚实度、求职意向稳定性',
+    fw:'可以说同方向的几家（证明方向坚定），再强调这家公司的独特吸引点。\n参考话术："如果都拿到 offer，我会优先考虑业务匹配度和成长空间，贵司在 XX 方面最吸引我。"\n\n⚠️ 别撒谎说只面了这一家，也别贬低其他公司。' },
+  { id:'iv-06', cat:'求职动机', q:'为什么选择在这个城市工作？',
+    probe:'稳定性',
+    fw:'给出难以反驳的稳定理由：家在附近 / 伴侣在这 / 喜欢这个城市且已扎根 / 行业机会集中。\n\n⚠️ 避免"随便选的""先试试"这类回答，会让面试官担心你干不长。' },
+
+  // ===== 经历深挖·行为面 =====
+  { id:'iv-07', cat:'经历深挖·行为面', q:'介绍一段你最有成就感的经历',
+    probe:'真实性、贡献度、结果导向',
+    fw:'【STAR 框架】\nS 情境：什么背景下（1-2 句）\nT 任务：你的目标和职责\nA 行动：你具体做了什么（重点，占 60% 篇幅，用"我"开头）\nR 结果：可量化的成果（数字！）+ 收获\n\n⚠️ 选与岗位最相关的经历；说"我们"的部分要明确点出"我"的贡献。' },
+  { id:'iv-08', cat:'经历深挖·行为面', q:'讲一次你在时间紧、压力大时完成任务的经历',
+    probe:'抗压能力、优先级管理',
+    fw:'STAR + 【优先级管理】：\n1. 压力来源讲清楚（多任务 deadline 冲突 / 突发状况）\n2. 你如何排序（重要紧急矩阵 / 与上级对齐预期）\n3. 关键取舍\n4. 按时交付的结果\n\n亮点是"对齐预期"：主动沟通比闷头硬扛更显成熟。' },
+  { id:'iv-09', cat:'经历深挖·行为面', q:'讲一次你和团队成员意见不一致的经历，最后怎么解决的？',
+    probe:'沟通协作、情绪管理',
+    fw:'STAR + 【冲突处理】：\n1. 先听对方理由（体现尊重）\n2. 用数据/事实而非情绪说服\n3. 达成共识，或引入第三方判断\n4. 结果 + 关系复盘\n\n⚠️ 不要抱怨队友，重点展示你的沟通方式。' },
+  { id:'iv-10', cat:'经历深挖·行为面', q:'讲一次失败或受挫折的经历，你从中学到了什么？',
+    probe:'归因方式、成长型思维',
+    fw:'选真实但非致命的失败（别选"粗心导致大事故"级别）。结构：\n情境 → 我的失误在哪 → 怎么补救 → 之后建立了什么机制避免再犯 → 后来的验证结果。\n\n⚠️ 向外甩锅 = 减分；面试官看的是你如何归因。' },
+  { id:'iv-11', cat:'经历深挖·行为面', q:'讲一次你主动承担额外职责、超出预期的经历',
+    probe:'主动性、责任心',
+    fw:'STAR，重点突出"主动"：\n没有人要求 → 你发现机会/风险 → 主动提出并推动 → 结果。\n结尾可以加一句老板/同事的正面反馈，增强说服力。' },
+  { id:'iv-12', cat:'经历深挖·行为面', q:'你做过的最艰难的决定是什么？',
+    probe:'决策框架、价值观',
+    fw:'结构：\n1. 两个选项各自的利弊\n2. 你的决策标准（价值观 / 长期主义）\n3. 最终决定\n4. 结果与反思\n\n展示你决策有框架，不是拍脑袋。' },
+
+  // ===== 能力素质 =====
+  { id:'iv-13', cat:'能力素质', q:'你最大的优点和缺点分别是什么？',
+    probe:'自我认知、真诚度',
+    fw:'优点：对应 JD 核心要求 + 例子佐证。\n缺点三要素：① 真实且与岗位核心能力无关 ② 它带来的具体影响 ③ 你正在用的改进方法和已有成效。\n\n⚠️ "我太追求完美"这类伪缺点 HR 一听就烦。' },
+  { id:'iv-14', cat:'能力素质', q:'你如何面对批评和负面反馈？',
+    probe:'开放度、情绪成熟度',
+    fw:'举真实例子：被谁批评了什么 → 你的第一反应（先听完、不急着辩解）→ 复盘后认同了哪部分 → 做了什么改变。\n\n展示"对事不对人"的成熟度。' },
+  { id:'iv-15', cat:'能力素质', q:'你的学习能力怎么样？最近学了什么新东西？',
+    probe:'学习闭环、好奇心',
+    fw:'举一个 3 个月内的具体学习案例：\n为什么学 → 怎么学（路径：文档/课程/实践）→ 用到哪里了 → 效果如何。\n\n证明你有完整的"自学闭环"，而不是"我学东西很快"的空话。' },
+  { id:'iv-16', cat:'能力素质', q:'你怎么同时管理多个任务、安排优先级？',
+    probe:'方法论、条理性',
+    fw:'1. 说清你的具体方法：任务四象限 / 每日三件事 / 周计划\n2. 举一个多线并行的真实例子\n3. 提到"预期管理"：进度风险提前同步给相关方' },
+
+  // ===== 实习校招专项 =====
+  { id:'iv-17', cat:'实习校招专项', q:'你对我们公司 / 这个行业有什么了解？',
+    probe:'信息搜集、商业 sense',
+    fw:'面试前必做功课清单：\n· 公司主营业务和核心产品\n· 近期大动作（融资/新品/舆情）\n· 行业竞品格局\n· 目标岗位在其中的角色\n\n答题时给出你自己的一个观察或观点，而不只是罗列新闻。' },
+  { id:'iv-18', cat:'实习校招专项', q:'实习你能保证多久？每周可以来几天？',
+    probe:'到岗保障',
+    fw:'直接给明确数字 + 可到岗时间。课业有冲突就提前说明时间段。\n\n⚠️ 诚实最重要——入职后发现对不上，会直接影响转正评价。' },
+  { id:'iv-19', cat:'实习校招专项', q:'如何看待实习中的重复性、基础性工作？',
+    probe:'心态、职业化程度',
+    fw:'三层回答：\n1. 表态：把基础工作做到超出预期，是建立信任最快的方式\n2. 主动性：在重复中找优化点（举个小例子）\n3. 期待：希望逐步承担更多\n\n⚠️ 别表现出"我是来干大事的"。' },
+  { id:'iv-20', cat:'实习校招专项', q:'你有考研 / 考公的打算吗？',
+    probe:      '稳定性、诚实度',
+    fw:'如实说明。如果计划不确定，表达"无论之后怎么规划，实习期间会全力投入"。\n\n⚠️ 撒谎说绝不考、入职后辞职备考——行业圈子小，信任成本很高。' },
+
+  // ===== 岗位专业题 =====
+  { id:'iv-21', cat:'岗位专业题', q:'（产品方向）你如何理解产品经理的日常工作？',
+    probe:'岗位认知',
+    fw:'一句话定位：在业务目标和用户需求之间找最优解的人。\n日常闭环：需求收集（用户/数据/业务）→ 优先级判断 → 方案设计（PRD/原型）→ 推动开发落地 → 数据复盘迭代。\n\n强调"沟通协调占比很高，不只是画原型"。加分项：结合该公司的一款产品提一个你的观察。' },
+  { id:'iv-22', cat:'岗位专业题', q:'（市场/品牌方向）如果让你策划一场线上营销活动，你会怎么做？',
+    probe:'结构化思维、落地能力',
+    fw:'【五步法】\n1. 目标与人群：活动目标（拉新/转化/品牌曝光）→ 目标人群画像\n2. 洞察与创意：用户痛点 × 热点，一句话核心创意\n3. 渠道与预算：选什么渠道、预算怎么分配\n4. 执行排期：预热 - 爆发 - 收尾的节奏\n5. 效果评估：核心指标是什么、如何复盘\n\n结合该公司的具体产品来说会大大加分。' },
+  { id:'iv-23', cat:'岗位专业题', q:'（运营方向）如何提升一个社群 / 账号的用户活跃度？',
+    probe:'运营方法论',
+    fw:'【拆解公式】活跃 = 新用户进来 × 留存 × 频次\n1. 先诊断：活跃低是拉新不足还是留存差（数据说话）\n2. 内容侧：固定栏目、优质内容供给\n3. 活动侧：签到、话题、打卡等机制设计\n4. 分层运营：核心用户重点维护，腰部用户激活\n5. 指标：设定北极星指标和实验机制' },
+  { id:'iv-24', cat:'岗位专业题', q:'（数据方向）某核心指标突然下降 30%，你会怎么分析？',
+    probe:'分析框架、逻辑性',
+    fw:'【拆解思路】\n1. 确认数据真实性：埋点/统计口径有没有变化\n2. 拆维度定位：时间（突降还是缓降）、人群、渠道、地区\n3. 内部变化：近期发版 / 活动结束 / 价格调整\n4. 外部因素：竞品动作、节假日、政策\n5. 提出假设 → 验证 → 行动建议\n\n展示"结构化拆解"比直接给答案更重要。' },
+  { id:'iv-25', cat:'岗位专业题', q:'（技术方向）介绍一个你独立完成的项目，最大的技术难点是什么？',
+    probe:'深度、真实性',
+    fw:'【金字塔结构】\n1. 一句话说清项目做什么、你在其中的角色\n2. 技术难点：为什么难（复杂度/性能/兼容性）\n3. 你的解决过程：尝试了哪些方案 → 为什么选这个\n4. 结果 + 可量化收益\n\n⚠️ 简历上写的项目一定要能被追问三层，答不上来就别写。' },
+
+  // ===== 反问环节 =====
+  { id:'iv-26', cat:'反问环节', q:'你有什么想问我们的吗？',
+    probe:'求职诚意、思考深度',
+    fw:'准备 2-3 个问题，优选：\n· "这个岗位入职后前三个月的核心目标是什么？"\n· "团队现在最大的挑战是什么？"\n· "表现好的实习生，留下来的人都有什么共同点？"\n\n⚠️ 别在业务面问薪资加班（HR 面再谈）；别问官网能查到的信息；千万别说"没问题了"。' },
+];
+
+// ===== 岗位方向专业题库：按目标岗位自动匹配（题目里可用 {company} / {position} 占位符）=====
+const IV_PRO_PACKS = {
+  mkt: { label:'市场 / 品牌方向', keys:['市场','品牌','营销','公关','推广','传播','marketing','brand','gtm','pr'],
+    qs:[
+      { id:'ivp-mkt-1', cat:'岗位专业题', q:'如果让你为 {company} 的一款主力产品做上市推广，你会怎么规划？',
+        probe:'整合营销落地能力、结构化思维',
+        fw:'【五步法】\n1. 目标与人群：这次推广要什么（拉新/转化/声量）→ 目标人群画像\n2. 洞察与创意：用户痛点 × 热点，一句话核心创意\n3. 渠道与预算：渠道组合 + 预算分配逻辑\n4. 执行节奏：预热 - 爆发 - 收尾\n5. 效果评估：核心指标 + 复盘机制\n\n⚠️ 结合 {company} 的具体产品和目标市场来说，别给通用模板答案。' },
+      { id:'ivp-mkt-2', cat:'岗位专业题', q:'一场品牌 campaign 花了不少钱，老板问效果怎么样，你怎么汇报？',
+        probe:'品效认知、数据思维',
+        fw:'先分清「品牌指标」和「效果指标」两层：\n品牌层：曝光量、互动率、搜索指数变化、社媒声量、品牌提及\n效果层：点击、进店/下载、转化、ROI\n\n汇报结构：目标回顾 → 核心数据 → 对比基准（行业/历史）→ 洞察 → 下次怎么做。\n⚠️ 只报曝光量会被认为是外行。' },
+      { id:'ivp-mkt-3', cat:'岗位专业题', q:'预算只有 10 万，{company} 想在大学生群体里打开知名度，这钱你怎么花？',
+        probe:'小预算创意、杠杆思维',
+        fw:'小预算拼的不是投放量，是杠杆：\n1. 人群聚焦：选 1-2 所标杆学校打透，而不是撒网\n2. 内容杠杆：做一个有传播力的核心事件/物料，让用户自发传播\n3. 渠道杠杆：校园 KOC/KOL 合作、社团共创，用资源置换代替硬花钱\n4. 留钩子：扫码进社群/领福利，把曝光变成可运营的存量\n\n⚠️ 说出「先算单成本再定打法」会加分。' },
+      { id:'ivp-mkt-4', cat:'岗位专业题', q:'说一个你最近印象最深的营销案例，它好在哪？',
+        probe:'行业敏感度、分析深度',
+        fw:'结构：案例一句话 → 洞察（它抓住了什么用户心理/时机）→ 创意（为什么这个创意能带来自传播）→ 执行（渠道和节奏）→ 结果。\n\n⚠️ 别选烂大街的案例复述新闻稿；能指出「如果是我会怎么改进」才是真懂。' },
+    ] },
+  ops: { label:'运营方向', keys:['运营','社群','内容','用户增长','电商','店铺','主播','直播','私域'],
+    qs:[
+      { id:'ivp-ops-1', cat:'岗位专业题', q:'接手 {company} 的一个社群 / 账号后，用户活跃度很低，你怎么提升？',
+        probe:'运营方法论',
+        fw:'【拆解公式】活跃 = 新用户进来 × 留存 × 频次\n1. 先诊断：活跃低是拉新不足还是留存差（数据说话）\n2. 内容侧：固定栏目、优质内容供给\n3. 活动侧：签到、话题、打卡等机制设计\n4. 分层运营：核心用户重点维护，腰部用户激活\n5. 指标：设定北极星指标和实验机制' },
+      { id:'ivp-ops-2', cat:'岗位专业题', q:'新用户次日留存率只有 20%，你会从哪些环节排查和优化？',
+        probe:'用户生命周期理解',
+        fw:'沿用户动线逐环节看：\n1. 来源质量：渠道带来的用户匹配吗\n2. 首次体验：新手引导顺不顺、价值感知快不快（能不能 1 分钟内让用户尝到甜头）\n3. 回访动力：有没有留下次来的理由（内容更新/任务/社交关系）\n4. 触达：push/短信/私信有没有做好\n\n给出 1-2 个具体假设 + 怎么验证。' },
+      { id:'ivp-ops-3', cat:'岗位专业题', q:'一场活动结束后，你的复盘会怎么写？',
+        probe:'复盘能力、数据素养',
+        fw:'复盘 ≠ 罗列数据，结构：\n1. 目标 vs 实际（差距多少）\n2. 分环节拆解：哪个环节漏损最大（曝光→点击→参与→转化）\n3. 归因：做对了什么 / 做错了什么 / 不可控因素\n4. 沉淀：可复用的经验 + 下次的行动项\n\n⚠️ 有「下次怎么改」才算复盘。' },
+      { id:'ivp-ops-4', cat:'岗位专业题', q:'如果你来负责 {company} {position} 的日常工作，第一周你会做什么？',
+        probe:'上手能力、岗位理解',
+        fw:'1. 摸现状：看数据、看历史动作、看用户反馈\n2. 找对标：竞品/优秀案例在怎么做\n3. 盘资源：手上有什幺可用的（内容、渠道、预算、协作方）\n4. 快赢：找 1-2 个低成本能见效的小改进先做\n\n⚠️ 别一上来就说大改版——先证明你懂现状。' },
+    ] },
+  pm: { label:'产品方向', keys:['产品经理','产品','pm','需求','原型','prd'],
+    qs:[
+      { id:'ivp-pm-1', cat:'岗位专业题', q:'你如何理解 {position} 的日常工作？',
+        probe:'岗位认知',
+        fw:'一句话定位：在业务目标和用户需求之间找最优解的人。\n日常闭环：需求收集（用户/数据/业务）→ 优先级判断 → 方案设计（PRD/原型）→ 推动开发落地 → 数据复盘迭代。\n\n强调"沟通协调占比很高，不只是画原型"。加分项：结合 {company} 的一款产品提一个你的观察。' },
+      { id:'ivp-pm-2', cat:'岗位专业题', q:'需求池里有 20 个需求，开发资源只够做 3 个，你怎么排优先级？',
+        probe:'取舍框架',
+        fw:'给框架而不是拍脑袋：\n1. 先对目标：哪个需求服务于本季度核心指标\n2. 评估两个维度：价值（覆盖人数 × 频次 × 痛点强度）vs 成本（开发量 × 风险）\n3. 可提 RICE / KANO 模型，但要说明你会简化使用\n4. 特殊项：技术债、合规要求单列\n\n⚠️ 敢于说「哪些先不做」，并给出对被砍需求的沟通方式。' },
+      { id:'ivp-pm-3', cat:'岗位专业题', q:'挑 {company} 的一款产品，说一个你会改进的点，为什么？',
+        probe:'产品 sense、准备程度',
+        fw:'结构：现状 → 用户痛点/场景 → 改进方案 → 预期效果 → 潜在成本。\n\n⚠️ 面试前真的要用这款产品；改的点要具体到交互层级，别只说「体验不好」；也要承认该方案的代价，显得客观。' },
+      { id:'ivp-pm-4', cat:'岗位专业题', q:'你怎么做用户调研？问卷没人填怎么办？',
+        probe:'用户理解、方法落地',
+        fw:'1. 先明确调研要回答什么问题，再选方法（问卷/访谈/数据观察）\n2. 定性先行：5-8 个深度访谈 > 500 份乱填的问卷\n3. 问卷没人填：换触点（产品内/社群/拦截）、降门槛（题量、时长）、给激励\n4. 警惕幸存者偏差：沉默用户才是改进金矿\n\n能讲一个自己做过的调研案例最佳。' },
+    ] },
+  data: { label:'数据方向', keys:['数据','分析','bi','数仓','统计','报表'],
+    qs:[
+      { id:'ivp-data-1', cat:'岗位专业题', q:'某核心指标突然下降 30%，你会怎么分析？',
+        probe:'分析框架、逻辑性',
+        fw:'【拆解思路】\n1. 确认数据真实性：埋点/统计口径有没有变化\n2. 拆维度定位：时间（突降还是缓降）、人群、渠道、地区\n3. 内部变化：近期发版 / 活动结束 / 价格调整\n4. 外部因素：竞品动作、节假日、政策\n5. 提出假设 → 验证 → 行动建议\n\n展示"结构化拆解"比直接给答案更重要。' },
+      { id:'ivp-data-2', cat:'岗位专业题', q:'老板让你设计一个 A/B 实验，你会怎么做？',
+        probe:'实验方法素养',
+        fw:'1. 明确假设和核心指标（一个主指标 + 护栏指标）\n2. 样本量与时长估算（显著性、避开周期性波动）\n3. 随机分流，检查两组是否同质\n4. 结果解读：显著吗 → 分人群看有没有副作用\n5. 决策与全量上线\n\n⚠️ 能说出「不显著的实验也有价值」是加分项。' },
+      { id:'ivp-data-3', cat:'岗位专业题', q:'刚入职，业务方说"帮我看看数据"，你怎么接这个模糊需求？',
+        probe:'需求澄清、沟通能力',
+        fw:'1. 反问三件事：你想做什么决策？看哪个时间段？谁是受众（汇报用还是自查用）\n2. 把模糊问题翻译成可分析的问题（指标定义、口径、维度）\n3. 先给快版：1 天内给方向性结论，再谈深入分析\n4. 交付时给结论和建议，而不是甩一张表\n\n⚠️ 展示"数据服务于决策"的意识。' },
+      { id:'ivp-data-4', cat:'岗位专业题', q:'给 {company} 的业务挑一个你最想分析的课题，你会怎么设计？',
+        probe:'业务 sense、主动性',
+        fw:'选一个真实、可落地的课题（如新用户转化漏斗、复购影响因素）：\n1. 业务问题是什么、判断它值多少钱/多少增长\n2. 需要什么数据、拿不拿得到\n3. 分析路径：拆解 → 假设 → 验证\n4. 产出会是什么决策建议\n\n⚠️ 课题宁小勿大，面试官最怕"用大数据解决小问题"。' },
+    ] },
+  tech: { label:'技术方向', keys:['开发','工程师','前端','后端','算法','测试','软件','java','python','程序','客户端','服务端','架构'],
+    qs:[
+      { id:'ivp-tech-1', cat:'岗位专业题', q:'介绍一个你独立完成的项目，最大的技术难点是什么？',
+        probe:'深度、真实性',
+        fw:'【金字塔结构】\n1. 一句话说清项目做什么、你在其中的角色\n2. 技术难点：为什么难（复杂度/性能/兼容性）\n3. 你的解决过程：尝试了哪些方案 → 为什么选这个\n4. 结果 + 可量化收益\n\n⚠️ 简历上写的项目一定要能被追问三层，答不上来就别写。' },
+      { id:'ivp-tech-2', cat:'岗位专业题', q:'讲一个你排查过的最难的 bug，怎么定位的？',
+        probe:'调试方法论',
+        fw:'结构：现象 → 影响范围 → 排查路径（日志/二分/最小复现）→ 根因 → 修复 + 怎么防再犯。\n\n⚠️ 重点讲「定位过程」而不是结果；结尾说"之后加了 XX 日志/测试"体现工程素养。' },
+      { id:'ivp-tech-3', cat:'岗位专业题', q:'如果让你为 {company} 的业务做技术选型，你会怎么考虑？',
+        probe:'工程权衡',
+        fw:'维度：团队能不能 hold 住（学习成本）> 社区生态和文档 > 性能是否满足 > 迁移成本和长期维护。\n\n给结论要带 trade-off："选 A 是因为 X，代价是 Y；如果场景变成 Z 我会换 B"。\n⚠️ 只会说"哪个新用哪个"是减分的。' },
+      { id:'ivp-tech-4', cat:'岗位专业题', q:'你平时怎么学新技术？最近在学什么？',
+        probe:'学习闭环、热情真实性',
+        fw:'给路径不只给态度：官方文档/源码 → 跑 demo → 做个小项目用上 → 输出（博客/笔记）。\n\n最近在学的东西要能聊 3 分钟细节——编的兴趣一眼就会被看穿。' },
+    ] },
+  design: { label:'设计方向', keys:['设计','ui','ux','视觉','交互','美术'],
+    qs:[
+      { id:'ivp-dsn-1', cat:'岗位专业题', q:'挑一个你的作品集项目，讲讲设计背后的思考过程。',
+        probe:'作品真实度、设计思维',
+        fw:'结构：业务/用户问题 → 调研与洞察 → 设计目标 → 方案推导（为什么是这个形态）→ 验证结果。\n\n⚠️ 别按界面顺序复述"这里放了个按钮"；每个决策都要有理由。' },
+      { id:'ivp-dsn-2', cat:'岗位专业题', q:'业务方要求的信息和你认为的最佳设计冲突，怎么办？',
+        probe:'沟通与专业平衡',
+        fw:'1. 先理解业务约束（合规/成本/排期），别直接说"不好看"\n2. 用数据和用户目标说明设计建议的理由\n3. 给折中方案或分阶段方案\n4. 达不成一致时尊重决策权，但留下书面记录\n\n展示"专业但不轴"。' },
+      { id:'ivp-dsn-3', cat:'岗位专业题', q:'用 5 分钟体验 {company} 的产品，说一个你会优化的体验细节。',
+        probe:'观察力、准备程度',
+        fw:'面试前真的去用！选一个小而具体的点：\n现状 → 用户在哪个场景会卡住 → 改进方案 → 为什么这个小改动值得做（影响面/频次）。\n\n⚠️ 说"整体风格可以更年轻化"这种大空话会被追问到崩。' },
+      { id:'ivp-dsn-4', cat:'岗位专业题', q:'你怎么看设计趋势？比如最近流行的某种风格该跟吗？',
+        probe:'审美判断、独立思考',
+        fw:'框架：趋势 ≠ 目的。先问：这个风格解决什么问题、适合我们的用户和品牌吗 → 决定跟不跟、跟多少。\n\n能举一个"我拒绝用某趋势"的例子并说清理由，比追潮流更加分。' },
+    ] },
+};
+
+// ===== 岗位感知：目标岗位 / 占位符解析 / 方向匹配 =====
+function ivTargetApp() {
+  return state.data.find(a => a.id === ivState.targetAppId) || null;
+}
+
+function ivFill(text) {
+  const app = ivTargetApp();
+  return String(text || '')
+    .replace(/\{company\}/g, app ? app.company : '我们公司')
+    .replace(/\{position\}/g, app ? app.position : '这个岗位');
+}
+
+function ivQText(q)  { return ivFill(q.q); }
+function ivFwText(q)  { return ivFill(q.fw); }
+function ivProbeText(q) { return ivFill(q.probe); }
+
+function ivDetectDir(app) {
+  if (!app) return null;
+  const text = ((app.position || '') + ' ' + (app.requirements || '') + ' ' + (app.notes || '')).toLowerCase();
+  let best = null, bestScore = 0;
+  Object.keys(IV_PRO_PACKS).forEach(k => {
+    let score = 0;
+    IV_PRO_PACKS[k].keys.forEach(w => { if (text.indexOf(w) >= 0) score += w.length; });
+    if (score > bestScore) { bestScore = score; best = k; }
+  });
+  return bestScore > 0 ? best : null;
+}
+
+// 岗位专业题区：选中目标岗位时换成该方向题包，否则用通用专业题
+function ivProSection() {
+  const app = ivTargetApp();
+  const dir = ivDetectDir(app);
+  if (app && dir) {
+    const pack = IV_PRO_PACKS[dir];
+    return {
+      title: '岗位专业题 · ' + pack.label,
+      note: '按「' + app.company + ' · ' + app.position + '」自动匹配，换目标岗位会换题。这组题练方向基本功；要贴着这家公司 JD 的专属题，点上方「让 AI 按岗位出题」。',
+      qs: pack.qs, matched: true,
+    };
+  }
+  return { title: '岗位专业题', note: '', qs: IV_BANK.filter(q => q.cat === '岗位专业题'), matched: false };
+}
+
+// 除专业题外的通用题库（专业题由 ivProSection 动态提供）
+function ivCommonQuestions() {
+  return IV_BANK.filter(q => q.cat !== '岗位专业题');
+}
+
+// 全部生效题目（定制题 + 动态专业题 + 通用题）
+function ivActiveQuestions() {
+  return (ivState.customQuestions || []).concat(ivProSection().qs).concat(ivCommonQuestions());
+}
+
+function loadIvData() {
+  try {
+    const raw = localStorage.getItem(IV_STORAGE_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      ivState.resumeText = p.resumeText || '';
+      ivState.records = p.records || {};
+      ivState.targetAppId = p.targetAppId || '';
+      if (Array.isArray(p.customQuestions)) ivState.customQuestions = p.customQuestions;
+    }
+  } catch(e) { console.warn('面试数据加载失败:', e); }
+}
+function saveIvData() {
+  localStorage.setItem(IV_STORAGE_KEY, JSON.stringify(ivState));
+}
+
+function ivGetRecord(qid) {
+  if (!ivState.records[qid]) ivState.records[qid] = { answer:'', mastery:0, updatedAt:0 };
+  return ivState.records[qid];
+}
+
+function renderInterview() {
+  // Target select
+  const sel = document.getElementById('iv-target');
+  const current = ivState.targetAppId;
+  let options = '<option value="">不指定（通用练习）</option>';
+  state.data.forEach(a => {
+    options += '<option value="' + a.id + '"' + (a.id === current ? ' selected' : '') + '>'
+      + escapeHtml(a.company + ' · ' + a.position) + '</option>';
+  });
+  sel.innerHTML = options;
+  if (current && !state.data.some(a => a.id === current)) {
+    ivState.targetAppId = '';
+    sel.value = '';
+  }
+
+  // Resume
+  document.getElementById('iv-resume').value = ivState.resumeText;
+  updateResumeHint();
+
+  renderIvJd();
+  renderIvStats();
+  renderIvQuestions();
+}
+
+function renderIvJd() {
+  const panel = document.getElementById('iv-jd-panel');
+  const app = state.data.find(a => a.id === ivState.targetAppId);
+  if (!app || (!app.requirements && !app.location && !app.salary)) {
+    if (!app) panel.hidden = true;
+    return;
+  }
+  const parts = [];
+  if (app.location) parts.push('📍 ' + app.location);
+  if (app.salary) parts.push('💰 ' + app.salary);
+  if (app.jobType) parts.push('🏷 ' + app.jobType);
+  document.getElementById('iv-jd-title').textContent = '岗位 JD · ' + app.company + ' ' + app.position;
+  document.getElementById('iv-jd-text').textContent =
+    (parts.length ? parts.join('　　') + '\n\n' : '') + (app.requirements || '（该记录未填写岗位要求，可点卡片编辑补充）');
+}
+
+function renderIvStats() {
+  const custom = ivState.customQuestions || [];
+  const all = ivActiveQuestions();
+  const total = all.length;
+  let practiced = 0, mastered = 0;
+  all.forEach(q => {
+    const r = ivState.records[q.id];
+    if (r && r.mastery >= 1) practiced++;
+    if (r && r.mastery >= 2) mastered++;
+  });
+  const pct = total ? Math.round(mastered / total * 100) : 0;
+  document.getElementById('iv-stats').innerHTML =
+    '<div class="iv-stat"><b>' + total + '</b><span>总题数</span></div>' +
+    '<div class="iv-stat"><b style="color:#166534">' + custom.length + '</b><span>定制题</span></div>' +
+    '<div class="iv-stat"><b style="color:#1d4ed8">' + practiced + '</b><span>已练</span></div>' +
+    '<div class="iv-stat"><b style="color:#166534">' + mastered + '</b><span>已掌握</span></div>' +
+    '<div class="iv-progress"><div class="iv-progress-bar" style="width:' + pct + '%"></div></div>' +
+    '<span style="font-size:12px;color:var(--c-text-mut)">掌握率 ' + pct + '%</span>';
+}
+
+// ===== AI 点评：整理文本 / 复制 / 导出 =====
+function ivAllQuestions() {
+  return ivActiveQuestions();
+}
+
+function ivAppOf(q) {
+  const bound = (q && q.appId) ? state.data.find(a => a.id === q.appId) : null;
+  return bound || ivTargetApp();
+}
+
+function buildCritiquePrompt(q, rec, app) {
+  const L = [];
+  L.push('请帮我点评下面这道面试练习题的答案，要求：');
+  L.push('1) 按「结构清晰度 / 是否答到考察点 / 有无具体事例和数据 / 语言精炼度 / 与岗位JD匹配度」五个维度各打 1-10 分，并给总分；');
+  L.push('2) 逐条指出问题（哪句空泛、哪个考点没答到、哪里该量化、哪段太长）；');
+  L.push('3) 给一版优化后的参考答案（只基于我写过的经历改写，不要编造我没提到的经历）；');
+  L.push('4) 最后给一句「口头表达」提示：这段答如果要在面试现场说，该怎么精简。');
+  L.push('');
+  L.push('===== 面试题 =====');
+  L.push(ivQText(q));
+  if (q.probe) { L.push(''); L.push('【考察点】' + ivProbeText(q)); }
+  if (q.fw) { L.push(''); L.push('【答题框架】'); L.push(ivFwText(q)); }
+  if (app) {
+    L.push('');
+    L.push('【目标岗位】' + app.company + ' · ' + app.position);
+    if (app.requirements) { L.push(''); L.push('【岗位 JD】'); L.push(app.requirements); }
+  }
+  L.push('');
+  L.push('===== 我的答案 =====');
+  const ans = (rec && rec.answer) ? rec.answer.trim() : '';
+  L.push(ans || '（这题我还没写答案，请先告诉我这道题该怎么搭框架、该准备什么素材）');
+  if (rec && rec.critique && rec.critique.trim()) {
+    L.push('');
+    L.push('===== 上一次的点评记录（不必重复，只说这版有没有改进） =====');
+    L.push(rec.critique.trim());
+  }
+  return L.join('\n');
+}
+
+function buildAllAnswersText() {
+  const done = ivAllQuestions().filter(q => {
+    const rec = ivState.records[q.id];
+    return rec && rec.answer && rec.answer.trim();
+  });
+  const L = [];
+  L.push('# 模拟面试答案 · 请 AI 点评');
+  L.push('');
+  L.push('共 ' + done.length + ' 道题已写答案。请逐题点评：每题按「结构清晰度 / 是否答到考察点 / 有无具体事例和数据 / 语言精炼度 / 与岗位JD匹配度」五个维度各打 1-10 分，指出具体问题，并给一版优化后的参考答案（只基于我写的经历改写，不要编造）。');
+  L.push('');
+  L.push('最后汇总：告诉我最该优先重写的 3 道题，以及一个共性短板。');
+  L.push('');
+  done.forEach((q, i) => {
+    const rec = ivState.records[q.id];
+    const app = ivAppOf(q);
+    const no = (i + 1) < 10 ? ('0' + (i + 1)) : (i + 1);
+    L.push('---');
+    L.push('');
+    L.push('## ' + no + '. ' + ivQText(q));
+    if (q.probe) L.push('- 考察点：' + ivProbeText(q));
+    if (app) L.push('- 目标岗位：' + app.company + ' · ' + app.position);
+    L.push('');
+    L.push('**我的答案**');
+    L.push('');
+    L.push(rec.answer.trim());
+    L.push('');
+  });
+  return { text: L.join('\n'), count: done.length };
+}
+
+let ivCopyText = '';
+
+function fallbackCopy(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) { return false; }
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text)
+      .then(() => true)
+      .catch(() => fallbackCopy(text));
+  }
+  return Promise.resolve(fallbackCopy(text));
+}
+
+function openCopyModal(title, tip, text, hint) {
+  ivCopyText = text;
+  document.getElementById('iv-copy-title').textContent = title;
+  document.getElementById('iv-copy-tip').textContent = tip;
+  document.getElementById('iv-copy-text').value = text;
+  document.getElementById('iv-copy-hint').textContent = hint || '';
+  document.getElementById('iv-copy-modal').hidden = false;
+}
+
+function ivRevealBlock(q, rec) {
+  const hasCritique = !!(rec.critique && rec.critique.trim());
+  const revealed = ivRevealSet.has(q.id) || hasCritique;
+  if (revealed) ivRevealSet.add(q.id);
+  const inner =
+    (q.probe ? '<div class="iv-section-label">考察点</div><div class="iv-framework" style="border-left-color:#94a3b8">' + escapeHtml(ivProbeText(q)) + '</div>' : '') +
+    (q.fw ? '<div class="iv-section-label">参考思路 / 答题框架</div><div class="iv-framework">' + escapeHtml(ivFwText(q)) + '</div>' : '') ||
+    '<div class="iv-framework" style="border-left-color:#94a3b8">这题还没有参考思路——点上面的按钮让 AI 给你讲一遍。</div>';
+  return '<div class="iv-reveal">' +
+      '<button class="iv-reveal-btn" data-iv-action="reveal" data-qid="' + q.id + '">' +
+        (revealed ? '收起参考思路' : '写完了，看参考思路') + '</button>' +
+      '<span class="iv-reveal-note">' +
+        (revealed
+          ? '对照框架检查有没有漏掉的点，再补进你的答案里。'
+          : (hasCritique ? '' : '建议先凭自己的理解答一版，写完再对照思路，记得更牢。')) +
+      '</span>' +
+    '</div>' +
+    '<div class="iv-fw-wrap' + (revealed ? ' show' : '') + '">' + inner + '</div>';
+}
+
+function ivCritiqueBlock(q, rec) {
+  const hasAns = !!(rec.answer && rec.answer.trim());
+  return '<div class="iv-answer-actions">' +
+      '<button class="btn btn-ghost btn-sm" data-iv-action="copy-critique" data-qid="' + q.id + '">' +
+        (hasAns ? '复制这题给 AI 点评' : '没思路？让 AI 讲讲这题怎么答') + '</button>' +
+      '<span class="iv-hint-inline">' +
+        (hasAns ? '会带上题目 + 你的答案，AI 给五维打分和优化版' : '会带上题目和考察点，AI 给答题思路和素材建议') +
+      '</span>' +
+    '</div>' +
+    '<div class="iv-section-label iv-critique-label">AI 点评 / 复盘笔记' +
+      ((rec.critique && rec.critique.trim()) ? '<span class="iv-done-badge">已有记录</span>' : '') +
+    '</div>' +
+    '<textarea class="iv-critique" data-iv-action="critique" data-qid="' + q.id + '" placeholder="把 AI 的点评、优化后的答案粘贴到这里存档，或写自己的复盘要点（自动保存）">' + escapeHtml(rec.critique || '') + '</textarea>';
+}
+
+function renderIvQuestions() {
+  const container = document.getElementById('iv-questions');
+  let html = '';
+  // ===== Custom question packs (JD-tailored) =====
+  const custom = ivState.customQuestions || [];
+  if (custom.length) {
+    const cats = [];
+    custom.forEach(q => { if (!cats.includes(q.cat || 'JD 定制题')) cats.push(q.cat || 'JD 定制题'); });
+    cats.forEach(cat => {
+      const qs = custom.filter(q => (q.cat || 'JD 定制题') === cat);
+      let cMastered = 0;
+      qs.forEach(q => { const r = ivState.records[q.id]; if (r && r.mastery >= 2) cMastered++; });
+      html += '<div class="iv-pack-title">' + escapeHtml(cat) +
+        '<span class="iv-cat-badge">' + qs.length + ' 题 · 已掌握 ' + cMastered + '</span>' +
+        '<button class="btn btn-ghost btn-sm" data-iv-action="del-pack" data-cat="' + escapeHtml(cat) + '" title="删除该题包">删除题包</button></div>';
+      qs.forEach(q => {
+        const r = ivState.records[q.id] || { answer:'', mastery:0, updatedAt:0 };
+        const m = IV_MASTERY[r.mastery] || IV_MASTERY[0];
+        const open = ivOpenSet.has(q.id) ? ' open' : '';
+        const updated = r.updatedAt ? '上次练习 ' + formatDateShort(new Date(r.updatedAt).toISOString()) : '还没写过答案';
+        html +=
+          '<div class="iv-card' + open + '" data-qid="' + q.id + '" style="border-left:3px solid #86efac">' +
+            '<div class="iv-card-head">' +
+              '<div class="iv-card-q">' + escapeHtml(ivQText(q)) + '</div>' +
+              '<button class="iv-mastery m' + r.mastery + '" data-iv-action="mastery" data-qid="' + q.id + '" title="点击切换掌握度">' + m.label + '</button>' +
+              '<svg class="iv-card-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '</div>' +
+            '<div class="iv-card-body">' +
+              '<div class="iv-section-label">我的答案<span class="iv-eye-hint">先自己写一版，框架收起来了</span></div>' +
+              '<textarea class="iv-answer" data-iv-action="answer" data-qid="' + q.id + '" placeholder="结合你的经历 + 目标岗位 JD 写下你的版本…">' + escapeHtml(r.answer) + '</textarea>' +
+              '<div class="iv-answer-meta"><span class="iv-saved-flag" data-saved-flag="' + q.id + '" style="visibility:hidden">已自动保存</span><span>' + updated + '</span></div>' +
+              ivRevealBlock(q, r) +
+              ivCritiqueBlock(q, r) +
+            '</div>' +
+          '</div>';
+      });
+    });
+  }
+  // ===== 岗位专业题：按目标岗位动态匹配 =====
+  const pro = ivProSection();
+  if (pro.qs.length) {
+    let pMastered = 0;
+    pro.qs.forEach(q => { const r = ivState.records[q.id]; if (r && r.mastery >= 2) pMastered++; });
+    html += '<div class="iv-cat-title">' + escapeHtml(pro.title) +
+      '<span class="iv-cat-badge">' + pro.qs.length + ' 题 · 已掌握 ' + pMastered + '</span>' +
+      (pro.matched ? '<span class="iv-match-badge">按目标岗位匹配</span>' : '') + '</div>' +
+      (pro.note ? '<div class="iv-match-note">' + escapeHtml(pro.note) + '</div>' : '');
+    pro.qs.forEach(q => {
+      const r = ivState.records[q.id] || { answer:'', mastery:0, updatedAt:0 };
+      const m = IV_MASTERY[r.mastery] || IV_MASTERY[0];
+      const open = ivOpenSet.has(q.id) ? ' open' : '';
+      const updated = r.updatedAt ? '上次练习 ' + formatDateShort(new Date(r.updatedAt).toISOString()) : '还没写过答案';
+      html +=
+        '<div class="iv-card' + open + '" data-qid="' + q.id + '" style="border-left:3px solid #c7d2fe">' +
+          '<div class="iv-card-head">' +
+            '<div class="iv-card-q">' + escapeHtml(ivQText(q)) + '</div>' +
+            '<button class="iv-mastery m' + r.mastery + '" data-iv-action="mastery" data-qid="' + q.id + '" title="点击切换掌握度">' + m.label + '</button>' +
+            '<svg class="iv-card-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</div>' +
+          '<div class="iv-card-body">' +
+            '<div class="iv-section-label">我的答案<span class="iv-eye-hint">先自己写一版，框架收起来了</span></div>' +
+            '<textarea class="iv-answer" data-iv-action="answer" data-qid="' + q.id + '" placeholder="结合你的经历 + 目标岗位 JD 写下你的版本…">' + escapeHtml(r.answer) + '</textarea>' +
+            '<div class="iv-answer-meta"><span class="iv-saved-flag" data-saved-flag="' + q.id + '" style="visibility:hidden">已自动保存</span><span>' + updated + '</span></div>' +
+            ivRevealBlock(q, r) +
+            ivCritiqueBlock(q, r) +
+          '</div>' +
+        '</div>';
+    });
+  }
+  // ===== 通用题库（专业题已由上方动态区替代）=====
+  const cats = [];
+  IV_BANK.forEach(q => { if (q.cat !== '岗位专业题' && !cats.includes(q.cat)) cats.push(q.cat); });
+  cats.forEach(cat => {
+    const qs = IV_BANK.filter(q => q.cat === cat);
+    html += '<div class="iv-cat-title">' + escapeHtml(cat) + '<span class="iv-cat-badge">' + qs.length + ' 题</span></div>';
+    qs.forEach(q => {
+      const r = ivState.records[q.id] || { answer:'', mastery:0, updatedAt:0 };
+      const m = IV_MASTERY[r.mastery] || IV_MASTERY[0];
+      const open = ivOpenSet.has(q.id) ? ' open' : '';
+      const updated = r.updatedAt ? '上次练习 ' + formatDateShort(new Date(r.updatedAt).toISOString()) : '还没写过答案';
+      html +=
+        '<div class="iv-card' + open + '" data-qid="' + q.id + '">' +
+          '<div class="iv-card-head">' +
+            '<div class="iv-card-q">' + escapeHtml(ivQText(q)) + '</div>' +
+            '<button class="iv-mastery m' + r.mastery + '" data-iv-action="mastery" data-qid="' + q.id + '" title="点击切换掌握度">' + m.label + '</button>' +
+            '<svg class="iv-card-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</div>' +
+          '<div class="iv-card-body">' +
+            '<div class="iv-section-label">我的答案<span class="iv-eye-hint">先自己写一版，框架收起来了</span></div>' +
+            '<textarea class="iv-answer" data-iv-action="answer" data-qid="' + q.id + '" placeholder="结合你的经历 + 目标岗位 JD 写下你的版本…">' + escapeHtml(r.answer) + '</textarea>' +
+            '<div class="iv-answer-meta"><span class="iv-saved-flag" data-saved-flag="' + q.id + '" style="visibility:hidden">已自动保存</span><span>' + updated + '</span></div>' +
+            ivRevealBlock(q, r) +
+            ivCritiqueBlock(q, r) +
+          '</div>' +
+        '</div>';
+    });
+  });
+  container.innerHTML = html;
+}
+
+function updateResumeHint() {
+  const len = ivState.resumeText.trim().length;
+  document.getElementById('iv-resume-hint').textContent =
+    len > 0 ? '已保存 ' + len + ' 字 · 自动保存 · 刷新不丢' : '自动保存 · 刷新不丢';
+}
+
+function switchView(view) {
+  const isKanban = view === 'kanban';
+  document.getElementById('view-kanban').hidden = !isKanban;
+  document.getElementById('view-interview').hidden = isKanban;
+  document.querySelectorAll('.view-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.view === view);
+  });
+  if (!isKanban) renderInterview();
+}
+
+function initInterviewEvents() {
+  // View tabs
+  document.querySelectorAll('.view-tab').forEach(t => {
+    t.addEventListener('click', () => switchView(t.dataset.view));
+  });
+
+  // Target change -> questions follow the position
+  document.getElementById('iv-target').addEventListener('change', (e) => {
+    ivState.targetAppId = e.target.value;
+    saveIvData();
+    renderIvJd();
+    renderIvQuestions();
+    renderIvStats();
+    if (ivState.targetAppId) {
+      const app = ivTargetApp();
+      showToast('已切换为「' + app.company + ' · ' + app.position + '」的题目', 'success');
+    }
+  });
+
+  // JD panel toggle
+  document.getElementById('iv-toggle-jd').addEventListener('click', () => {
+    const panel = document.getElementById('iv-jd-panel');
+    if (panel.hidden && !ivState.targetAppId) {
+      showToast('请先在上方选择一个目标岗位', 'error');
+      return;
+    }
+    panel.hidden = !panel.hidden;
+  });
+
+  // Resume panel toggle + autosave
+  document.getElementById('iv-toggle-resume').addEventListener('click', () => {
+    const panel = document.getElementById('iv-resume-panel');
+    panel.hidden = !panel.hidden;
+  });
+  const resumeTa = document.getElementById('iv-resume');
+  resumeTa.addEventListener('input', () => {
+    clearTimeout(resumeTa._timer);
+    resumeTa._timer = setTimeout(() => {
+      ivState.resumeText = resumeTa.value;
+      saveIvData();
+      updateResumeHint();
+    }, 600);
+  });
+
+  // Random question
+  document.getElementById('iv-random').addEventListener('click', () => {
+    const custom = ivState.customQuestions || [];
+    const active = ivActiveQuestions();
+    // Prefer unmastered custom questions of the target app, then other custom, then the rest (incl. matched pro pack)
+    let pool = custom.filter(q => q.appId && q.appId === ivState.targetAppId &&
+      !(ivState.records[q.id] && ivState.records[q.id].mastery >= 2));
+    if (!pool.length) {
+      pool = custom.filter(q => !(ivState.records[q.id] && ivState.records[q.id].mastery >= 2));
+    }
+    if (!pool.length) {
+      pool = active.filter(q => !(ivState.records[q.id] && ivState.records[q.id].mastery >= 2));
+    }
+    const list = pool.length ? pool : active;
+    const pick = list[Math.floor(Math.random() * list.length)];
+    ivOpenSet.clear();
+    ivOpenSet.add(pick.id);
+    ivRevealSet.delete(pick.id);
+    renderIvQuestions();
+    const card = document.querySelector('.iv-card[data-qid="' + pick.id + '"]');
+    if (card) {
+      card.scrollIntoView({ behavior:'smooth', block:'center' });
+      card.classList.add('flash');
+      setTimeout(() => card.classList.remove('flash'), 1500);
+    }
+  });
+
+  // Question cards: delegation
+  const qContainer = document.getElementById('iv-questions');
+  qContainer.addEventListener('click', (e) => {
+    // Delete whole custom pack
+    const delPack = e.target.closest('[data-iv-action="del-pack"]');
+    if (delPack) {
+      e.stopPropagation();
+      const cat = delPack.dataset.cat;
+      const count = ivState.customQuestions.filter(q => (q.cat || 'JD 定制题') === cat).length;
+      showConfirm('删除定制题包', '将删除「' + cat + '」下的 ' + count + ' 道题及其练习记录，确定吗？',
+        () => {
+          const ids = ivState.customQuestions.filter(q => (q.cat || 'JD 定制题') === cat).map(q => q.id);
+          ivState.customQuestions = ivState.customQuestions.filter(q => (q.cat || 'JD 定制题') !== cat);
+          ids.forEach(id => { delete ivState.records[id]; });
+          saveIvData();
+          renderIvQuestions();
+          renderIvStats();
+          showToast('已删除题包「' + cat + '」', 'success');
+        });
+      return;
+    }
+    // Copy single question for AI critique
+    const cpBtn = e.target.closest('[data-iv-action="copy-critique"]');
+    if (cpBtn) {
+      e.stopPropagation();
+      const qid = cpBtn.dataset.qid;
+      const q = ivAllQuestions().find(x => x.id === qid);
+      if (!q) return;
+      const rec = ivState.records[qid] || { answer:'' };
+      const hasAns = rec.answer && rec.answer.trim();
+      openCopyModal(
+        hasAns ? '复制这题给 AI 点评' : '让 AI 讲讲这题怎么答',
+        hasAns
+          ? '已整理好「题目 + 考察点 + 我的答案 + 点评要求」。点「复制」粘贴给 AI（小台），就能拿到五维打分和优化版参考答案。'
+          : '这题你还没写答案——已整理好「题目 + 考察点」。点「复制」粘贴给 AI，让它先给你答题思路和素材建议。',
+        buildCritiquePrompt(q, rec, ivAppOf(q)),
+        'AI 的回复粘贴到题目下方的「AI 点评 / 复盘笔记」里存档，下次练习可以对照'
+      );
+      return;
+    }
+    // Mastery badge: cycle without collapsing
+    const mBtn = e.target.closest('[data-iv-action="mastery"]');
+    if (mBtn) {
+      e.stopPropagation();
+      const r = ivGetRecord(mBtn.dataset.qid);
+      r.mastery = (r.mastery + 1) % 3;
+      r.updatedAt = r.updatedAt || Date.now();
+      saveIvData();
+      // Update badge in place
+      const m = IV_MASTERY[r.mastery];
+      mBtn.textContent = m.label;
+      mBtn.className = 'iv-mastery m' + r.mastery;
+      renderIvStats();
+      return;
+    }
+    // Reveal / hide reference framework
+    const rvBtn = e.target.closest('[data-iv-action="reveal"]');
+    if (rvBtn) {
+      e.stopPropagation();
+      const card = rvBtn.closest('.iv-card');
+      const qid = card.dataset.qid;
+      const wrap = card.querySelector('.iv-fw-wrap');
+      const note = card.querySelector('.iv-reveal-note');
+      const showing = !wrap.classList.contains('show');
+      wrap.classList.toggle('show', showing);
+      if (showing) ivRevealSet.add(qid); else ivRevealSet.delete(qid);
+      rvBtn.textContent = showing ? '收起参考思路' : '写完了，看参考思路';
+      if (note) {
+        note.textContent = showing
+          ? '对照框架检查有没有漏掉的点，再补进你的答案里。'
+          : '建议先凭自己的理解答一版，写完再对照思路，记得更牢。';
+      }
+      return;
+    }
+    // Card head: toggle open
+    const head = e.target.closest('.iv-card-head');
+    if (head) {
+      const card = head.closest('.iv-card');
+      const qid = card.dataset.qid;
+      card.classList.toggle('open');
+      if (card.classList.contains('open')) ivOpenSet.add(qid);
+      else ivOpenSet.delete(qid);
+    }
+  });
+
+  // Answer autosave (debounced)
+  qContainer.addEventListener('input', (e) => {
+    const ta = e.target.closest('[data-iv-action="answer"]');
+    if (!ta) return;
+    const qid = ta.dataset.qid;
+    clearTimeout(ivSaveTimers[qid]);
+    ivSaveTimers[qid] = setTimeout(() => {
+      const r = ivGetRecord(qid);
+      r.answer = ta.value;
+      r.updatedAt = Date.now();
+      saveIvData();
+      const flag = document.querySelector('[data-saved-flag="' + qid + '"]');
+      if (flag) {
+        flag.style.visibility = 'visible';
+        setTimeout(() => { flag.style.visibility = 'hidden'; }, 1800);
+      }
+    }, 700);
+  });
+  qContainer.addEventListener('change', (e) => {
+    const ta = e.target.closest('[data-iv-action="answer"]');
+    if (!ta) return;
+    const r = ivGetRecord(ta.dataset.qid);
+    r.answer = ta.value;
+    r.updatedAt = Date.now();
+    saveIvData();
+  });
+
+  // ===== AI 点评 / 复盘笔记：自动保存 =====
+  qContainer.addEventListener('input', (e) => {
+    const ta = e.target.closest('[data-iv-action="critique"]');
+    if (!ta) return;
+    const qid = ta.dataset.qid;
+    clearTimeout(ivCritiqueTimers[qid]);
+    ivCritiqueTimers[qid] = setTimeout(() => {
+      const r = ivGetRecord(qid);
+      r.critique = ta.value;
+      r.updatedAt = r.updatedAt || Date.now();
+      saveIvData();
+      const flag = document.querySelector('[data-saved-flag="' + qid + '"]');
+      if (flag) {
+        flag.style.visibility = 'visible';
+        setTimeout(() => { flag.style.visibility = 'hidden'; }, 1800);
+      }
+    }, 700);
+  });
+  qContainer.addEventListener('change', (e) => {
+    const ta = e.target.closest('[data-iv-action="critique"]');
+    if (!ta) return;
+    const qid = ta.dataset.qid;
+    const r = ivGetRecord(qid);
+    r.critique = ta.value;
+    saveIvData();
+    const body = ta.closest('.iv-card-body');
+    const label = body ? body.querySelector('.iv-critique-label') : null;
+    if (label && ta.value.trim() && !label.querySelector('.iv-done-badge')) {
+      const b = document.createElement('span');
+      b.className = 'iv-done-badge';
+      b.textContent = '已有记录';
+      label.appendChild(b);
+    }
+  });
+
+  // Custom question pack import
+  document.getElementById('iv-import-pack').addEventListener('click', () => {
+    document.getElementById('iv-pack-input').value = '';
+    document.getElementById('iv-pack-modal').hidden = false;
+  });
+  document.getElementById('iv-pack-save').addEventListener('click', () => {
+    const raw = document.getElementById('iv-pack-input').value.trim();
+    if (!raw) { showToast('请先粘贴 JSON 内容', 'error'); return; }
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch (err) { showToast('JSON 格式有误：' + err.message, 'error'); return; }
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    const ts = Date.now();
+    let added = 0, skipped = 0;
+    const existingQs = new Set(ivState.customQuestions.map(q => q.q));
+    items.forEach((item, i) => {
+      if (!item || typeof item.q !== 'string' || !item.q.trim()) { skipped++; return; }
+      if (existingQs.has(item.q.trim())) { skipped++; return; }
+      let appId = '';
+      if (item.company) {
+        const app = state.data.find(a => a.company === item.company) ||
+                    state.data.find(a => a.company.indexOf(item.company) >= 0 || item.company.indexOf(a.company) >= 0);
+        if (app) appId = app.id;
+      }
+      ivState.customQuestions.push({
+        id: 'cst-' + ts + '-' + i,
+        cat: (item.cat || 'JD 定制题').trim(),
+        q: item.q.trim(),
+        fw: item.fw || '',
+        probe: item.probe || '',
+        appId: appId,
+      });
+      added++;
+    });
+    if (!added) { showToast('没有导入任何题目（' + skipped + ' 条为空或重复）', 'error'); return; }
+    saveIvData();
+    document.getElementById('iv-pack-modal').hidden = true;
+    renderIvQuestions();
+    renderIvStats();
+    showToast('已导入 ' + added + ' 道定制题' + (skipped ? '，跳过 ' + skipped + ' 条重复/无效' : ''), 'success');
+  });
+
+  // ===== 让 AI 按目标岗位出定制题（一键拼提示词）=====
+  document.getElementById('iv-gen-pack').addEventListener('click', () => {
+    const app = ivTargetApp();
+    if (!app) {
+      showToast('请先在上方选择一个目标岗位，再让 AI 出题', 'error');
+      return;
+    }
+    const hasJd = !!(app.requirements && app.requirements.trim());
+    const resume = (ivState.resumeText || '').trim();
+    const L = [];
+    L.push('请根据下面的目标岗位信息' + (resume ? '和我的简历' : '') + '，生成这个岗位专属的模拟面试题包。');
+    L.push('要求：');
+    L.push('1) 出 8-10 道题：2-3 道针对该公司业务/产品/目标市场的专业题、3-4 道结合我简历经历的深挖追问题、2-3 道 JD 关键职责的场景题；');
+    L.push('2) 题目要具体到这家公司的业务场景，不要通用模板题；题面里可用 {company} / {position} 占位符代替公司名和岗位名；');
+    L.push('3) 每条 JSON 字段：q（问题）、fw（答题框架，写具体可操作的思路而不是空话）、probe（考察点）、cat（分类，用「定制·' + app.company + '」）、company（填 "' + app.company + '"）；');
+    L.push('4) 只输出 JSON 数组，不要输出任何其他文字，方便我直接粘贴导入工作台。');
+    L.push('');
+    L.push('===== 目标岗位 =====');
+    L.push(app.company + ' · ' + app.position);
+    if (hasJd) { L.push(''); L.push('===== 岗位 JD ====='); L.push(app.requirements.trim()); }
+    else { L.push(''); L.push('===== 岗位 JD ====='); L.push('（这条投递还没填岗位要求，请按 ' + app.position + ' 的通用考察点出题，建议我先补上 JD 再重新生成）'); }
+    if (resume) { L.push(''); L.push('===== 我的简历 ====='); L.push(resume); }
+    openCopyModal(
+      '让 AI 按「' + app.company + ' · ' + app.position + '」出题',
+      hasJd
+        ? '点「复制」后把内容发给我（小台），我会针对这个 JD' + (resume ? '和你的简历' : '') + '出 8-10 道专属题，并回复 JSON。'
+        : '这条记录还没填岗位要求——先复制发我也行，但建议先点投递卡片补上 JD，出的题会更准。',
+      L.join('\n'),
+      '拿到我回复的 JSON 后：点「导入定制题包」→ 粘贴 → 导入，题目会自动挂到这个岗位上'
+    );
+  });
+
+  // ===== AI 点评：导出全部答案 / 复制到剪贴板 =====
+  document.getElementById('iv-export-answers').addEventListener('click', () => {
+    const res = buildAllAnswersText();
+    if (!res.count) {
+      showToast('还没有写过答案的题目，先练几道再来', 'error');
+      return;
+    }
+    openCopyModal(
+      '导出答案给 AI 点评',
+      '已汇总 ' + res.count + ' 道题的你写的答案。点「复制」后粘贴给 AI（小台），我会逐题打分、指出问题，并给优化版参考答案。',
+      res.text,
+      '共 ' + res.count + ' 道题 · 也可以点「下载 .md 文件」存到本地再发我'
+    );
+  });
+
+  document.getElementById('iv-copy-do').addEventListener('click', () => {
+    const text = document.getElementById('iv-copy-text').value;
+    if (!text.trim()) { showToast('没有可复制的内容', 'error'); return; }
+    copyToClipboard(text).then(ok => {
+      showToast(ok ? '已复制，粘贴给我即可' : '复制失败：请手动全选（⌘/Ctrl + A）后复制', ok ? 'success' : 'error');
+    });
+  });
+
+  document.getElementById('iv-copy-download').addEventListener('click', () => {
+    const text = document.getElementById('iv-copy-text').value;
+    if (!text.trim()) { showToast('没有可下载的内容', 'error'); return; }
+    const blob = new Blob([text], { type:'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '面试答案_给AI点评_' + todayStr() + '.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('已下载 .md 文件', 'success');
+  });
+
+  document.querySelectorAll('[data-close-modal="iv-copy-modal"]').forEach(b => {
+    b.addEventListener('click', () => { ivCopyText = ''; });
+  });
+}
+
+// ========================================================================
+//  Init
+// ========================================================================
+function init() {
+  loadData();
+  loadIvData();
+  initEventListeners();
+  initInterviewEvents();
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>
